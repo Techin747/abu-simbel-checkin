@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ABU SIMBEL | Check-in System v7</title>
+    <title>ABU SIMBEL | Check-in System v8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -16,33 +16,16 @@
         body{background:#0A0A0A;color:#fff;font-family:'Prompt',sans-serif;-webkit-tap-highlight-color:transparent}
         .glass{background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1)}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
-        @media print{
-            @page{size:A4 landscape;margin:10mm}
-            body{background:white!important;color:black!important;font-size:10pt}
-            .no-print{display:none!important}
-            .print-only{display:block!important}
-            .glass{background:none!important;backdrop-filter:none!important;border:1px solid #ddd!important}
-            table.report-table{width:100%;border-collapse:collapse;font-size:8pt}
-            table.report-table th,table.report-table td{border:1px solid #333;padding:3px 5px;text-align:center}
-            table.report-table th{background:#f0f0f0!important;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-            table.report-table .present{color:green;font-weight:bold}
-            table.report-table .absent{color:red;font-weight:bold}
-            .report-header{text-align:center;margin-bottom:10px}
-            .report-header h1{font-size:16pt;margin:0}
-            .report-header p{font-size:10pt;margin:3px 0;color:#555}
-            .stat-card-print{border:1px solid #ccc;padding:10px;border-radius:8px;text-align:center;margin-bottom:10px}
-        }
+        @media print{@page{size:A4 landscape;margin:10mm}body{background:white!important;color:black!important;font-size:10pt}.no-print{display:none!important}.print-only{display:block!important}.glass{background:none!important;backdrop-filter:none!important;border:1px solid #ddd!important}table.report-table{width:100%;border-collapse:collapse;font-size:8pt}table.report-table th,table.report-table td{border:1px solid #333;padding:3px 5px;text-align:center}table.report-table th{background:#f0f0f0!important;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact}table.report-table .present{color:green;font-weight:bold}table.report-table .absent{color:red;font-weight:bold}.report-header{text-align:center;margin-bottom:10px}.report-header h1{font-size:16pt;margin:0}.report-header p{font-size:10pt;margin:3px 0;color:#555}}
         .print-only{display:none}
     </style>
 </head>
 <body class="min-h-screen">
-<div id="fallback-msg" style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px;color:#CCFF00;font-family:'Prompt',sans-serif;">
-    <div><h1 style="font-size:24px;margin-bottom:10px;">⚠️ กำลังโหลดระบบ...</h1><p style="color:#888;font-size:14px;">หากค้างเกิน 10 วินาที กรุณา Refresh</p></div>
-</div>
+<div id="fallback-msg" style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px;color:#CCFF00;font-family:'Prompt',sans-serif;"><div><h1 style="font-size:24px;margin-bottom:10px;">⚠️ กำลังโหลดระบบ...</h1><p style="color:#888;font-size:14px;">หากค้างเกิน 10 วินาที กรุณา Refresh</p></div></div>
 
 <div id="app" v-cloak class="p-4 max-w-3xl mx-auto pb-20 no-print">
 
-    <!-- ==================== LOGIN ==================== -->
+    <!-- LOGIN -->
     <div v-if="step==='login'" class="min-h-[80vh] flex items-center justify-center">
         <div class="glass rounded-3xl p-8 w-full text-center space-y-6">
             <div class="w-20 h-20 bg-neon-yellow/10 rounded-full flex items-center justify-center mx-auto"><i class="ph-fill ph-identification-card text-4xl text-neon-yellow"></i></div>
@@ -56,22 +39,22 @@
         </div>
     </div>
 
-    <!-- ==================== STAFF: SESSION SELECT ==================== -->
+    <!-- SESSION SELECT -->
     <div v-else-if="step==='session'" class="space-y-6">
         <div class="glass rounded-2xl p-5 flex items-center justify-between">
             <div class="flex items-center gap-3"><div class="w-10 h-10 bg-neon-yellow/20 rounded-full flex items-center justify-center text-neon-yellow"><i class="ph-fill ph-user-circle text-xl"></i></div><div><div class="font-bold">{{ currentStaff.name }}</div><div class="text-xs text-gray-400">{{ todayDisplay }} • {{ currentStaff.role==='admin'?'Admin':'Staff' }}</div></div></div>
             <button @click="logout" class="px-4 py-2 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/10 transition text-sm">ออก</button>
         </div>
-        <div v-if="!isTodayActive" class="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 text-center"><i class="ph-fill ph-warning-circle text-3xl text-red-400 mb-2"></i><h3 class="font-bold text-red-400 text-lg">วันนี้ไม่เปิดเช็คชื่อ</h3><p class="text-sm text-gray-400 mt-1">Admin ยังไม่ได้เปิดวันที่ {{ todayKey }}</p></div>
+        <div v-if="!isTodayActive" class="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 text-center"><i class="ph-fill ph-warning-circle text-3xl text-red-400 mb-2"></i><h3 class="font-bold text-red-400 text-lg">วันนี้ไม่เปิดเช็คชื่อ</h3></div>
         <h3 class="text-xl font-display font-bold">เลือกเมนู</h3>
         <div class="grid grid-cols-2 gap-4">
-            <button @click="selectSession('morning')" :disabled="!isTodayActive" class="glass rounded-2xl p-6 text-left hover:border-neon-yellow/50 hover:shadow-neon transition-all group disabled:opacity-30 disabled:cursor-not-allowed"><div class="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-orange-500/20 transition"><i class="ph-fill ph-sun text-3xl text-orange-400"></i></div><div class="font-bold text-lg">เช็คชื่อเช้า</div><div class="text-xs text-gray-400">08:00 - 12:00</div></button>
-            <button @click="selectSession('afternoon')" :disabled="!isTodayActive" class="glass rounded-2xl p-6 text-left hover:border-neon-yellow/50 hover:shadow-neon transition-all group disabled:opacity-30 disabled:cursor-not-allowed"><div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-500/20 transition"><i class="ph-fill ph-cloud-sun text-3xl text-blue-400"></i></div><div class="font-bold text-lg">เช็คชื่อบ่าย</div><div class="text-xs text-gray-400">13:00 - 16:00</div></button>
+            <button @click="selectSession('morning')" :disabled="!isTodayActive" class="glass rounded-2xl p-6 text-left hover:border-neon-yellow/50 hover:shadow-neon transition-all group disabled:opacity-30"><div class="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-orange-500/20 transition"><i class="ph-fill ph-sun text-3xl text-orange-400"></i></div><div class="font-bold text-lg">เช็คชื่อเช้า</div></button>
+            <button @click="selectSession('afternoon')" :disabled="!isTodayActive" class="glass rounded-2xl p-6 text-left hover:border-neon-yellow/50 hover:shadow-neon transition-all group disabled:opacity-30"><div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-500/20 transition"><i class="ph-fill ph-cloud-sun text-3xl text-blue-400"></i></div><div class="font-bold text-lg">เช็คชื่อบ่าย</div></button>
         </div>
-        <button v-if="currentStaff?.role==='admin'" @click="goToAdmin" class="w-full glass rounded-2xl p-5 text-left hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all group flex items-center gap-4 mt-2"><div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 transition"><i class="ph-fill ph-gear-six text-3xl text-purple-400"></i></div><div><div class="font-bold text-lg">Admin Panel</div><div class="text-xs text-gray-400">นักเรียน • วันเช็คชื่อ • รายงาน • สถิติ</div></div></button>
+        <button v-if="currentStaff?.role==='admin'" @click="goToAdmin" class="w-full glass rounded-2xl p-5 text-left hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all group flex items-center gap-4 mt-2"><div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 transition"><i class="ph-fill ph-gear-six text-3xl text-purple-400"></i></div><div><div class="font-bold text-lg">Admin Panel</div><div class="text-xs text-gray-400">นักเรียน • วันเช็คชื่อ • สถิติ • รายงาน</div></div></button>
     </div>
 
-    <!-- ==================== STAFF: CHECK-IN ==================== -->
+    <!-- CHECK-IN -->
     <div v-else-if="step==='checkin'" class="space-y-4">
         <div class="flex items-center justify-between"><button @click="step='session'" class="text-gray-400 hover:text-white text-sm flex items-center gap-1"><i class="ph ph-arrow-left"></i> กลับ</button><select v-model="selectedRoom" class="px-4 py-2 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow min-w-[140px]"><option value="" disabled>เลือกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select></div>
         <h2 class="font-display font-bold flex items-center gap-2 text-lg"><i :class="currentSession==='morning'?'ph-fill ph-sun text-orange-400':'ph-fill ph-cloud-sun text-blue-400'"></i> เช็คชื่อ{{ currentSession==='morning'?'ภาคเช้า':'ภาคบ่าย' }} • {{ todayDisplay }}</h2>
@@ -81,11 +64,10 @@
         <div v-else class="glass rounded-2xl p-12 text-center text-gray-500"><i class="ph ph-hand-pointing text-4xl mb-3 block"></i><p class="text-sm">เลือกห้องด้านบน</p></div>
     </div>
 
-    <!-- ==================== 🔐 ADMIN PANEL ==================== -->
+    <!-- ADMIN PANEL -->
     <div v-else-if="step==='admin'" class="space-y-6">
         <div class="flex items-center justify-between"><button @click="step='session'" class="text-gray-400 hover:text-white text-sm flex items-center gap-1"><i class="ph ph-arrow-left"></i> กลับ</button><h2 class="font-display font-bold text-lg flex items-center gap-2"><i class="ph-fill ph-gear-six text-purple-400"></i> Admin Panel</h2></div>
 
-        <!-- Tab Nav -->
         <div class="flex gap-1 bg-white/5 p-1 rounded-xl overflow-x-auto no-print">
             <button @click="adminTab='analytics'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='analytics'?'bg-neon-yellow text-neon-dark':'text-gray-400 hover:text-white']"><i class="ph-fill ph-chart-bar"></i> สถิติ</button>
             <button @click="adminTab='students'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='students'?'bg-purple-500 text-white':'text-gray-400 hover:text-white']"><i class="ph-fill ph-users-three"></i> นักเรียน</button>
@@ -93,9 +75,9 @@
             <button @click="adminTab='report'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='report'?'bg-purple-500 text-white':'text-gray-400 hover:text-white']"><i class="ph-fill ph-printer"></i> รายงาน</button>
         </div>
 
-        <!-- 🆕 TAB: ANALYTICS DASHBOARD -->
+        <!-- 🆕 TAB: ANALYTICS (Redesigned) -->
         <div v-if="adminTab==='analytics'" class="space-y-4">
-            <!-- Filter Bar -->
+            <!-- Date Range Filter -->
             <div class="glass rounded-2xl p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-chart-bar text-neon-yellow"></i> สถิติการมาเข้าสี</h3>
@@ -113,63 +95,63 @@
                 <div class="text-[10px] text-gray-500">📅 วิเคราะห์จาก {{ analyticsDates.length }} วันที่เปิดเช็คชื่อ</div>
             </div>
 
-            <!-- Sub-tab: View Mode -->
-            <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
-                <button @click="analyticsView='overview'" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition',analyticsView==='overview'?'bg-white/10 text-white':'text-gray-500']">📊 ภาพรวม</button>
-                <button @click="analyticsView='byRoom'" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition',analyticsView==='byRoom'?'bg-white/10 text-white':'text-gray-500']">🏫 แยกห้อง</button>
-                <button @click="analyticsView='byPerson'" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition',analyticsView==='byPerson'?'bg-white/10 text-white':'text-gray-500']">👤 แยกคน</button>
-                <button @click="analyticsView='byDay'" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition',analyticsView==='byDay'?'bg-white/10 text-white':'text-gray-500']">📅 แยกวัน</button>
+            <!-- 🆕 VIEW SELECTOR (Dropdown แบบชัด) -->
+            <div class="glass rounded-xl p-3">
+                <label class="text-[10px] text-gray-400 uppercase block mb-1">เลือกมุมมองการแสดงผล</label>
+                <select v-model="analyticsView" class="w-full px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow font-bold">
+                    <option value="overview">📊 ภาพรวมทั้งโรงเรียน</option>
+                    <option value="byRoom">🏫 แยกตามห้องเรียน</option>
+                    <option value="byPerson">👤 แยกตามรายบุคคล (กดดูรายละเอียดได้)</option>
+                    <option value="byDay">📅 แยกตามวัน</option>
+                </select>
             </div>
 
             <!-- VIEW: ภาพรวม -->
             <div v-if="analyticsView==='overview'" class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-neon-yellow">{{ overviewStats.totalSlots }}</div><div class="text-xs text-gray-400">ช่องเช็คชื่อทั้งหมด</div></div>
+                    <div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-neon-yellow">{{ overviewStats.totalSlots }}</div><div class="text-xs text-gray-400">ช่องทั้งหมด</div></div>
                     <div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-green-400">{{ overviewStats.presentSlots }}</div><div class="text-xs text-gray-400">มาเรียน</div></div>
                     <div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-red-400">{{ overviewStats.absentSlots }}</div><div class="text-xs text-gray-400">ขาดเรียน</div></div>
-                    <div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-white">{{ overviewStats.percent }}%</div><div class="text-xs text-gray-400">อัตราการมาเรียน</div></div>
+                    <div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-white">{{ overviewStats.percent }}%</div><div class="text-xs text-gray-400">อัตรามาเรียน</div></div>
                 </div>
-                <!-- Progress Bar -->
-                <div class="glass rounded-xl p-4">
-                    <div class="flex justify-between text-xs mb-2"><span class="text-green-400">มา {{ overviewStats.presentSlots }}</span><span class="text-red-400">ขาด {{ overviewStats.absentSlots }}</span></div>
-                    <div class="w-full h-4 bg-red-500/30 rounded-full overflow-hidden"><div class="h-full bg-green-500 rounded-full transition-all duration-500" :style="{width: overviewStats.percent+'%'}"></div></div>
-                </div>
-                <!-- Top Rooms -->
-                <div class="glass rounded-xl p-4">
-                    <h4 class="font-bold text-sm mb-3 flex items-center gap-2"><i class="ph-fill ph-trophy text-neon-yellow"></i> ห้องที่มาเรียนดีที่สุด (Top 3)</h4>
-                    <div v-for="(room,i) in topRooms" :key="room.name" class="flex items-center gap-3 mb-2 last:mb-0">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :class="i===0?'bg-neon-yellow text-neon-dark':i===1?'bg-gray-300 text-gray-800':'bg-orange-400 text-white'">{{ i+1 }}</div>
-                        <div class="flex-1"><div class="text-sm font-medium">{{ room.name }}</div><div class="w-full h-1.5 bg-white/10 rounded-full mt-1"><div class="h-full bg-green-400 rounded-full" :style="{width:room.percent+'%'}"></div></div></div>
-                        <div class="text-sm font-bold" :class="room.percent>=80?'text-green-400':room.percent>=60?'text-yellow-400':'text-red-400'">{{ room.percent }}%</div>
-                    </div>
-                </div>
+                <div class="glass rounded-xl p-4"><div class="flex justify-between text-xs mb-2"><span class="text-green-400">มา {{ overviewStats.presentSlots }}</span><span class="text-red-400">ขาด {{ overviewStats.absentSlots }}</span></div><div class="w-full h-4 bg-red-500/30 rounded-full overflow-hidden"><div class="h-full bg-green-500 rounded-full transition-all duration-500" :style="{width:overviewStats.percent+'%'}"></div></div></div>
+                <div class="glass rounded-xl p-4"><h4 class="font-bold text-sm mb-3 flex items-center gap-2"><i class="ph-fill ph-trophy text-neon-yellow"></i> Top 3 ห้องที่มาเรียนดีที่สุด</h4><div v-for="(room,i) in topRooms" :key="room.name" class="flex items-center gap-3 mb-2 last:mb-0"><div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :class="i===0?'bg-neon-yellow text-neon-dark':i===1?'bg-gray-300 text-gray-800':'bg-orange-400 text-white'">{{ i+1 }}</div><div class="flex-1"><div class="text-sm font-medium">{{ room.name }}</div><div class="w-full h-1.5 bg-white/10 rounded-full mt-1"><div class="h-full bg-green-400 rounded-full" :style="{width:room.percent+'%'}"></div></div></div><div class="text-sm font-bold" :class="room.percent>=80?'text-green-400':room.percent>=60?'text-yellow-400':'text-red-400'">{{ room.percent }}%</div></div></div>
             </div>
 
             <!-- VIEW: แยกห้อง -->
             <div v-if="analyticsView==='byRoom'" class="space-y-3">
                 <div v-for="room in roomAnalytics" :key="room.name" class="glass rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="font-bold text-base">{{ room.name }}</div>
-                        <div class="text-lg font-bold" :class="room.percent>=80?'text-green-400':room.percent>=60?'text-yellow-400':'text-red-400'">{{ room.percent }}%</div>
-                    </div>
+                    <div class="flex items-center justify-between mb-2"><div class="font-bold text-base">{{ room.name }}</div><div class="text-lg font-bold" :class="room.percent>=80?'text-green-400':room.percent>=60?'text-yellow-400':'text-red-400'">{{ room.percent }}%</div></div>
                     <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full rounded-full transition-all duration-500" :class="room.percent>=80?'bg-green-500':room.percent>=60?'bg-yellow-500':'bg-red-500'" :style="{width:room.percent+'%'}"></div></div>
-                    <div class="flex justify-between text-xs text-gray-400"><span>มา {{ room.present }}/{{ room.total }} ช่อง</span><span>ขาด {{ room.absent }}</span></div>
+                    <div class="flex justify-between text-xs text-gray-400"><span>มา {{ room.present }}/{{ room.total }}</span><span>ขาด {{ room.absent }}</span></div>
                 </div>
             </div>
 
-            <!-- VIEW: แยกคน -->
+            <!-- 🆕 VIEW: แยกคน (Interactive + Click to Detail) -->
             <div v-if="analyticsView==='byPerson'" class="space-y-4">
-                <div class="glass rounded-xl p-3 flex gap-2 items-center"><i class="ph-fill ph-magnifying-glass text-neon-yellow"></i><input v-model="personSearch" type="text" placeholder="ค้นหาชื่อนักเรียน..." class="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-600"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="glass rounded-xl p-3 flex gap-2 items-center"><i class="ph-fill ph-magnifying-glass text-neon-yellow"></i><input v-model="personSearch" type="text" placeholder="ค้นหาชื่อ..." class="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-600"></div>
+                    <select v-model="personFilterRoom" class="px-3 py-2 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><option value="">ทุกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select>
+                </div>
+                <div class="text-[10px] text-gray-500 px-1">💡 กดที่ชื่อนักเรียนเพื่อดูรายละเอียดรายวัน</div>
                 <div class="glass rounded-2xl overflow-hidden">
                     <div class="max-h-[50vh] overflow-y-auto divide-y divide-white/5">
-                        <div v-for="p in filteredPersonAnalytics" :key="p.id" class="flex items-center justify-between p-3">
-                            <div class="min-w-0 flex-1">
-                                <div class="text-sm font-medium truncate">{{ p.name }}</div>
-                                <div class="text-[10px] text-gray-500">ID:{{ p.id }} • {{ p.room }} • เลขที่ {{ p.no }}</div>
+                        <div v-for="p in filteredPersonAnalytics" :key="p.id" 
+                             @click="openPersonDetail(p)"
+                             class="flex items-center justify-between p-4 hover:bg-white/[0.05] transition cursor-pointer active:bg-white/10">
+                            <div class="min-w-0 flex-1 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0">{{ p.no }}</div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-medium truncate">{{ p.name }}</div>
+                                    <div class="text-[10px] text-gray-500">{{ p.room }} • ID:{{ p.id }}</div>
+                                </div>
                             </div>
-                            <div class="text-right shrink-0 ml-3">
-                                <div class="text-sm font-bold" :class="p.percent>=80?'text-green-400':p.percent>=60?'text-yellow-400':'text-red-400'">{{ p.percent }}%</div>
-                                <div class="text-[10px] text-gray-500">{{ p.present }}/{{ p.totalDays }}</div>
+                            <div class="text-right shrink-0 ml-3 flex items-center gap-2">
+                                <div>
+                                    <div class="text-sm font-bold" :class="p.percent>=80?'text-green-400':p.percent>=60?'text-yellow-400':'text-red-400'">{{ p.percent }}%</div>
+                                    <div class="text-[10px] text-gray-500">{{ p.present }}/{{ p.totalDays }}</div>
+                                </div>
+                                <i class="ph-fill ph-caret-right text-gray-600"></i>
                             </div>
                         </div>
                         <div v-if="filteredPersonAnalytics.length===0" class="p-8 text-center text-gray-500 text-sm">ไม่พบข้อมูล</div>
@@ -180,10 +162,7 @@
             <!-- VIEW: แยกวัน -->
             <div v-if="analyticsView==='byDay'" class="space-y-3">
                 <div v-for="day in dayAnalytics" :key="day.date" class="glass rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="font-bold text-sm">{{ formatDateThai(day.date) }} <span class="text-gray-500 font-normal text-xs">({{ day.dayName }})</span></div>
-                        <div class="text-lg font-bold" :class="day.percent>=80?'text-green-400':day.percent>=60?'text-yellow-400':'text-red-400'">{{ day.percent }}%</div>
-                    </div>
+                    <div class="flex items-center justify-between mb-2"><div class="font-bold text-sm">{{ formatDateThai(day.date) }} <span class="text-gray-500 font-normal text-xs">({{ day.dayName }})</span></div><div class="text-lg font-bold" :class="day.percent>=80?'text-green-400':day.percent>=60?'text-yellow-400':'text-red-400'">{{ day.percent }}%</div></div>
                     <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full rounded-full transition-all duration-500" :class="day.percent>=80?'bg-green-500':day.percent>=60?'bg-yellow-500':'bg-red-500'" :style="{width:day.percent+'%'}"></div></div>
                     <div class="flex justify-between text-xs text-gray-400"><span>มา {{ day.present }}/{{ day.total }}</span><span>ขาด {{ day.absent }}</span></div>
                 </div>
@@ -194,7 +173,6 @@
         <!-- TAB: นักเรียน -->
         <div v-if="adminTab==='students'" class="space-y-4">
             <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-user-plus text-neon-yellow"></i> เพิ่มนักเรียน</h3><div class="grid grid-cols-2 gap-3"><input v-model="newStudent.name" type="text" placeholder="ชื่อ-นามสกุล" class="px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><input v-model="newStudent.id" type="text" placeholder="เลขประจำตัว" class="px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"></div><div class="grid grid-cols-2 gap-3"><select v-model="newStudent.room" class="px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><option value="" disabled>เลือกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select><input v-model.number="newStudent.no" type="number" placeholder="เลขที่" min="1" class="px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"></div><button @click="addStudent" :disabled="!newStudent.name||!newStudent.room" class="w-full py-3 bg-neon-yellow text-neon-dark font-bold rounded-xl hover:shadow-neon transition disabled:opacity-30">เพิ่มนักเรียน</button></div>
-            <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-file-text text-blue-400"></i> Import รายชื่อ</h3><p class="text-[10px] text-gray-400">รูปแบบ: ชื่อ / ID / เลขที่ (บรรทัดละ 1 ค่า, 3 บรรทัดต่อคน)</p><textarea v-model="importText" rows="3" placeholder="สมชาย ใจดี&#10;10001&#10;1" class="w-full px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow font-mono"></textarea><div class="grid grid-cols-2 gap-3"><select v-model="importRoom" class="px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><option value="" disabled>เลือกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select><button @click="importStudents" :disabled="!importText||!importRoom" class="py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-400 transition disabled:opacity-30">นำเข้า</button></div></div>
             <div class="glass rounded-2xl p-5"><div class="flex justify-between items-center mb-3"><h3 class="font-bold text-base">นักเรียนทั้งหมด ({{ allStudents.length }})</h3><select v-model="studentFilterRoom" class="px-3 py-1.5 bg-white/5 border border-neon-border rounded-lg text-xs outline-none focus:border-neon-yellow"><option value="">ทุกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select></div><div v-if="filteredAdminStudents.length===0" class="text-center text-gray-500 py-6 text-sm">ไม่มีข้อมูล</div><div v-else class="space-y-2 max-h-[40vh] overflow-y-auto"><div v-for="stu in filteredAdminStudents" :key="stu.id" class="flex items-center justify-between p-3 bg-white/5 rounded-xl"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 rounded-full bg-neon-yellow/10 text-neon-yellow flex items-center justify-center text-xs font-bold shrink-0">{{ stu.no }}</div><div class="min-w-0"><div class="text-sm font-medium truncate">{{ stu.name }}</div><div class="text-[10px] text-gray-500">ID:{{ stu.id }} • {{ stu.room }}</div></div></div><button @click="deleteStudent(stu.id)" class="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition shrink-0"><i class="ph-fill ph-trash text-lg"></i></button></div></div></div>
         </div>
 
@@ -207,27 +185,62 @@
         <!-- TAB: รายงาน A4 -->
         <div v-if="adminTab==='report'" class="space-y-4">
             <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-funnel text-neon-yellow"></i> ตัวกรองรายงาน</h3><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-gray-400 uppercase block mb-1">วันเริ่มต้น</label><input v-model="reportStart" type="date" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"></div><div><label class="text-[10px] text-gray-400 uppercase block mb-1">วันสิ้นสุด</label><input v-model="reportEnd" type="date" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-gray-400 uppercase block mb-1">ห้องเรียน</label><select v-model="reportRoom" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"><option value="" disabled>เลือกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select></div><div><label class="text-[10px] text-gray-400 uppercase block mb-1">ช่วงเวลา</label><select v-model="reportSession" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"><option value="morning">ภาคเช้า</option><option value="afternoon">ภาคบ่าย</option><option value="all">ทั้งสองช่วง</option></select></div></div><div class="flex gap-2 pt-1"><button @click="setReportWeek(0)" class="flex-1 py-2 bg-neon-yellow/10 text-neon-yellow rounded-lg text-xs font-bold hover:bg-neon-yellow/20 transition">สัปดาห์นี้</button><button @click="setReportWeek(1)" class="flex-1 py-2 bg-white/5 text-gray-400 rounded-lg text-xs font-bold hover:bg-white/10 transition">สัปดาห์ที่แล้ว</button></div></div>
-            <div v-if="reportFilteredDates.length>0&&reportRoom" class="glass rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">📅 วันที่เปิด: <span class="text-white font-bold">{{ reportFilteredDates.length }} วัน</span></div><div class="text-xs text-gray-400">📊 ข้อมูล {{ reportAttendanceCount }} รายการ</div></div>
-            <button @click="printReport" :disabled="!reportRoom||reportFilteredDates.length===0" class="w-full py-4 bg-purple-500 text-white font-bold text-lg rounded-xl hover:bg-purple-400 active:scale-95 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"><i class="ph-fill ph-printer text-xl"></i> พิมพ์รายงาน A4</button>
+            <div v-if="reportFilteredDates.length>0&&reportRoom" class="glass rounded-xl p-4"><div class="text-xs text-gray-400">📅 {{ reportFilteredDates.length }} วัน • 📊 {{ reportAttendanceCount }} รายการ</div></div>
+            <button @click="printReport" :disabled="!reportRoom||reportFilteredDates.length===0" class="w-full py-4 bg-purple-500 text-white font-bold text-lg rounded-xl hover:bg-purple-400 active:scale-95 transition disabled:opacity-30 flex items-center justify-center gap-2"><i class="ph-fill ph-printer text-xl"></i> พิมพ์รายงาน A4</button>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- ==================== 🆕 PERSON DETAIL MODAL ==================== -->
+    <transition name="fade">
+        <div v-if="personDetail.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="personDetail.show=false">
+            <div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-lg text-neon-yellow">{{ personDetail.student?.name }}</h3>
+                        <p class="text-xs text-gray-400">{{ personDetail.student?.room }} • เลขที่ {{ personDetail.student?.no }} • ID:{{ personDetail.student?.id }}</p>
+                    </div>
+                    <button @click="personDetail.show=false" class="text-gray-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
+                </div>
+
+                <!-- Summary Bar -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center"><div class="text-xl font-bold text-green-400">{{ personDetail.presentCount }}</div><div class="text-[10px] text-gray-500">มา</div></div>
+                    <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-center"><div class="text-xl font-bold text-red-400">{{ personDetail.absentCount }}</div><div class="text-[10px] text-gray-500">ขาด</div></div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center"><div class="text-xl font-bold text-white">{{ personDetail.percent }}%</div><div class="text-[10px] text-gray-500">รวม</div></div>
+                </div>
+
+                <!-- 🆕 Timeline รายวัน -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase mb-3">ประวัติการเข้าเรียนรายวัน</h4>
+                    <div class="space-y-2">
+                        <div v-for="d in personDetail.timeline" :key="d.date" class="flex items-center gap-3 p-2.5 rounded-xl" :class="d.present?'bg-green-500/10 border border-green-500/20':'bg-red-500/10 border border-red-500/20'">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0" :class="d.present?'bg-green-500 text-white':'bg-red-500/30 text-red-400'">
+                                <i :class="d.present?'ph-fill ph-check':'ph-fill ph-x'"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-medium" :class="d.present?'text-green-400':'text-red-400'">{{ d.present?'มาเรียน':'ขาดเรียน' }}</div>
+                                <div class="text-[10px] text-gray-500">{{ formatDateThai(d.date) }} ({{ d.dayName }})</div>
+                            </div>
+                            <div v-if="d.time" class="text-[10px] text-gray-500 font-mono shrink-0">{{ d.time }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- CONFIRM MODAL -->
     <transition name="fade"><div v-if="confirmModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="confirmModal.show=false"><div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl"><div class="w-14 h-14 bg-neon-yellow/10 rounded-full flex items-center justify-center mx-auto"><i class="ph-fill ph-user-check text-2xl text-neon-yellow"></i></div><h3 class="font-bold text-lg">ยืนยันการเช็คชื่อ</h3><div class="glass rounded-xl p-3 space-y-1"><p class="text-neon-yellow font-bold">{{ confirmModal.student?.name }}</p><p class="text-xs text-gray-400">ID:{{ confirmModal.student?.id }} • เลขที่ {{ confirmModal.student?.no }}</p></div><div class="flex gap-3 pt-1"><button @click="confirmModal.show=false" class="flex-1 py-3 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition">ยกเลิก</button><button @click="doCheckIn" class="flex-1 py-3 bg-neon-yellow text-neon-dark font-bold rounded-xl text-sm hover:shadow-neon-strong transition">ยืนยัน ✓</button></div></div></div></transition>
+
+    <!-- EDIT MODAL -->
     <transition name="fade"><div v-if="editModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="editModal.show=false"><div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-xs space-y-4 shadow-2xl"><div class="flex justify-between items-center"><h3 class="font-bold flex items-center gap-2"><i class="ph-fill ph-pencil-simple text-neon-yellow"></i> จัดการรายการ</h3><button @click="editModal.show=false" class="text-gray-400 hover:text-white"><i class="ph ph-x text-lg"></i></button></div><div class="glass rounded-xl p-4 space-y-2"><p class="text-neon-yellow font-bold text-base">{{ editModal.record?.studentName }}</p><div class="pt-2 border-t border-white/10 space-y-1.5"><div class="flex justify-between text-xs"><span class="text-gray-500">เวลา:</span><input v-if="editModal.isEditing" v-model="editModal.editTime" type="time" class="bg-white/10 border border-neon-border rounded px-2 py-1 text-white outline-none text-xs focus:border-neon-yellow w-24 text-center"><span v-else class="text-white font-mono">{{ editModal.record?.time }}</span></div></div></div><div class="flex gap-3 pt-1"><button v-if="!editModal.isEditing" @click="editModal.isEditing=true" class="flex-1 py-3 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1"><i class="ph-fill ph-pencil-simple"></i> แก้เวลา</button><button v-else @click="saveEditTime" class="flex-1 py-3 bg-neon-yellow text-neon-dark rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1"><i class="ph-fill ph-check"></i> บันทึก</button><button @click="deleteRecord" class="flex-1 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1"><i class="ph-fill ph-trash"></i> ลบ</button></div></div></div></transition>
+
+    <!-- TOAST -->
     <transition name="fade"><div v-if="toast.show" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-3 rounded-xl shadow-2xl font-bold text-sm whitespace-nowrap" :class="toast.ok?'bg-green-500 text-white':'bg-red-500 text-white'">{{ toast.msg }}</div></transition>
 </div>
 
 <!-- PRINT TEMPLATE -->
-<div class="print-only" style="padding:0;">
-    <div class="report-header"><h1>รายงานสถิติการมาเข้าสี คณะสีอะบูซิมเบล</h1><p>ช่วงวันที่: {{ formatDateThai(analyticsStart) }} - {{ formatDateThai(analyticsEnd) }} ({{ analyticsDates.length }} วันที่เปิด)</p><p style="font-size:9pt;color:#888;">พิมพ์เมื่อ: {{ nowDisplay }}</p></div>
-    <div v-if="analyticsView==='overview'||analyticsView==='byRoom'">
-        <table class="report-table"><thead><tr><th>ห้อง</th><th>ทั้งหมด</th><th>มา</th><th>ขาด</th><th>%</th></tr></thead><tbody><tr v-for="r in roomAnalytics" :key="r.name"><td>{{ r.name }}</td><td>{{ r.total }}</td><td class="present">{{ r.present }}</td><td class="absent">{{ r.absent }}</td><td><strong>{{ r.percent }}%</strong></td></tr></tbody></table>
-    </div>
-    <div v-if="analyticsView==='byPerson'" style="margin-top:15px;">
-        <table class="report-table"><thead><tr><th>เลขที่</th><th style="text-align:left">ชื่อ</th><th>ห้อง</th><th>มา</th><th>วันเปิด</th><th>%</th></tr></thead><tbody><tr v-for="p in personAnalytics" :key="p.id"><td>{{ p.no }}</td><td style="text-align:left">{{ p.name }}</td><td>{{ p.room }}</td><td class="present">{{ p.present }}</td><td>{{ p.totalDays }}</td><td><strong>{{ p.percent }}%</strong></td></tr></tbody></table>
-    </div>
-</div>
+<div class="print-only" style="padding:0;"><div class="report-header"><h1>รายงานสถิติการมาเข้าสี คณะสีอะบูซิมเบล</h1><p>{{ formatDateThai(analyticsStart) }} - {{ formatDateThai(analyticsEnd) }} ({{ analyticsDates.length }} วัน)</p></div><table class="report-table"><thead><tr><th>ห้อง</th><th>ทั้งหมด</th><th>มา</th><th>ขาด</th><th>%</th></tr></thead><tbody><tr v-for="r in roomAnalytics" :key="r.name"><td>{{ r.name }}</td><td>{{ r.total }}</td><td class="present">{{ r.present }}</td><td class="absent">{{ r.absent }}</td><td><strong>{{ r.percent }}%</strong></td></tr></tbody></table></div>
 
 <script>
 document.getElementById('fallback-msg').style.display='none';
@@ -242,44 +255,40 @@ createApp({setup(){
     const newActiveDate=ref('');
     const reportStart=ref(''),reportEnd=ref(''),reportRoom=ref(''),reportSession=ref('morning');
     const newStudent=ref({name:'',id:'',room:'',no:1});
-    const importText=ref(''),importRoom=ref(''),studentFilterRoom=ref('');
-
-    // Analytics State
-    const analyticsStart=ref(''),analyticsEnd=ref(''),analyticsView=ref('overview'),personSearch=ref('');
+    const studentFilterRoom=ref('');
+    const analyticsStart=ref(''),analyticsEnd=ref(''),analyticsView=ref('overview');
+    const personSearch=ref(''),personFilterRoom=ref('');
+    // 🆕 Person Detail Modal State
+    const personDetail=ref({show:false,student:null,presentCount:0,absentCount:0,percent:0,timeline:[]});
 
     const todayKey=computed(()=>new Date().toISOString().split('T')[0]);
     const todayDisplay=computed(()=>new Date().toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'}));
     const nowDisplay=computed(()=>new Date().toLocaleString('th-TH'));
     const allAccounts=[{id:'ST001',name:'อ.สมชาย',role:'staff'},{id:'ST002',name:'อ.วิชัย',role:'staff'},{id:'ADMIN',name:'ผู้ดูแลระบบ',role:'admin'}];
     const rooms=['ม.4/1','ม.4/2','ม.5/1','ม.5/2','ม.6/1','ม.6/2'];
-
     const defaultStudents=[];let dsid=10000;
     rooms.forEach(r=>{for(let i=1;i<=10;i++){dsid++;defaultStudents.push({id:String(dsid),no:i,name:'นักเรียน '+dsid,room:r})}});
     const allStudents=ref(JSON.parse(localStorage.getItem('abs_students')||'null')||defaultStudents);
     watch(allStudents,val=>localStorage.setItem('abs_students',JSON.stringify(val)),{deep:true});
     const activeDays=ref(JSON.parse(localStorage.getItem('abs_active_days')||'[]'));
     watch(activeDays,val=>localStorage.setItem('abs_active_days',JSON.stringify(val)),{deep:true});
-    const attendance=ref(JSON.parse(localStorage.getItem('abs_v7')||'[]'));
-    watch(attendance,val=>localStorage.setItem('abs_v7',JSON.stringify(val)),{deep:true});
+    const attendance=ref(JSON.parse(localStorage.getItem('abs_v8')||'[]'));
+    watch(attendance,val=>localStorage.setItem('abs_v8',JSON.stringify(val)),{deep:true});
 
     function doLogin(){error.value='';const f=allAccounts.find(a=>a.id===staffIdInput.value.trim().toUpperCase());if(!f){error.value='รหัสไม่ถูกต้อง';return}currentStaff.value=f;step.value='session'}
     function logout(){currentStaff.value=null;staffIdInput.value='';step.value='login'}
     function selectSession(s){currentSession.value=s;selectedRoom.value='';searchId.value='';step.value='checkin'}
     function goToAdmin(){adminTab.value='analytics';setAnalyticsRange(0);step.value='admin'}
-
     const isTodayActive=computed(()=>activeDays.value.includes(todayKey.value));
     const sortedActiveDays=computed(()=>[...activeDays.value].sort((a,b)=>b.localeCompare(a)));
     function addActiveDay(){if(!newActiveDate.value)return;if(activeDays.value.includes(newActiveDate.value)){showToast('มีอยู่แล้ว',false);return}activeDays.value.push(newActiveDate.value);newActiveDate.value='';showToast('✅ เพิ่มวันสำเร็จ',true)}
     function removeActiveDay(idx){const r=sortedActiveDays.value[idx];activeDays.value=activeDays.value.filter(d=>d!==r);showToast('ลบแล้ว',false)}
     function clearAllDays(){if(confirm('ล้างทั้งหมด?')){activeDays.value=[];showToast('ล้างแล้ว',false)}}
     function addWeekDays(w){const now=new Date();const dow=now.getDay();const mo=dow===0?-6:1-dow;const mon=new Date(now);mon.setDate(now.getDate()+mo+(w*7));let a=0;for(let i=0;i<5;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];if(!activeDays.value.includes(ds)){activeDays.value.push(ds);a++}}showToast('✅ เพิ่ม '+a+' วัน',true)}
-
     function addStudent(){if(!newStudent.value.name||!newStudent.value.room)return;const sid=newStudent.value.id||String(Date.now()).slice(-6);if(allStudents.value.some(s=>s.id===sid)){showToast('ID ซ้ำ!',false);return}allStudents.value.push({id:sid,name:newStudent.value.name,room:newStudent.value.room,no:newStudent.value.no||getNextNo(newStudent.value.room)});newStudent.value={name:'',id:'',room:'',no:1};showToast('✅ เพิ่มสำเร็จ',true)}
     function deleteStudent(id){const s=allStudents.value.find(x=>x.id===id);if(s&&confirm('ลบ "'+s.name+'"?')){allStudents.value=allStudents.value.filter(x=>x.id!==id);showToast('🗑️ ลบแล้ว',false)}}
-    function importStudents(){if(!importText.value||!importRoom.value)return;const lines=importText.value.split('\n').map(l=>l.trim()).filter(l=>l);let a=0;for(let i=0;i<lines.length;i+=3){const n=lines[i],id=lines[i+1]||String(Date.now()).slice(-6)+a,no=parseInt(lines[i+2])||getNextNo(importRoom.value);if(n&&!allStudents.value.some(s=>s.id===id)){allStudents.value.push({id,name:n,room:importRoom.value,no});a++}}importText.value='';showToast('✅ นำเข้า '+a+' คน',true)}
     function getNextNo(room){const r=allStudents.value.filter(s=>s.room===room);return r.length?Math.max(...r.map(s=>s.no))+1:1}
     const filteredAdminStudents=computed(()=>{if(!studentFilterRoom.value)return[...allStudents.value].sort((a,b)=>a.room.localeCompare(b.room)||a.no-b.no);return allStudents.value.filter(s=>s.room===studentFilterRoom.value).sort((a,b)=>a.no-b.no)});
-
     const filteredStudents=computed(()=>{if(!selectedRoom.value)return[];let l=allStudents.value.filter(s=>s.room===selectedRoom.value);if(searchId.value.trim())l=l.filter(s=>s.id.includes(searchId.value.trim()));return l.sort((a,b)=>a.no-b.no)});
     const roomStats=computed(()=>{if(!selectedRoom.value||!currentSession.value)return{total:0,present:0,absent:0,percent:0};const t=allStudents.value.filter(s=>s.room===selectedRoom.value).length;const p=attendance.value.filter(a=>a.room===selectedRoom.value&&a.session===currentSession.value&&a.date===todayKey.value).length;return{total:t,present:p,absent:t-p,percent:t?Math.round(p/t*100):0}});
     function checked(id){return attendance.value.some(a=>a.studentId===id&&a.session===currentSession.value&&a.date===todayKey.value)}
@@ -298,85 +307,46 @@ createApp({setup(){
     // ===== ANALYTICS ENGINE =====
     function setAnalyticsRange(mode){
         const now=new Date();const dow=now.getDay();const mo=dow===0?-6:1-dow;
-        if(mode==='all'){
-            if(activeDays.value.length>0){analyticsStart.value=[...activeDays.value].sort()[0];analyticsEnd.value=[...activeDays.value].sort().pop()}
-            else{analyticsStart.value=todayKey.value;analyticsEnd.value=todayKey.value}
-        }else{
-            const mon=new Date(now);mon.setDate(now.getDate()+mo-(mode*7));
-            const fri=new Date(mon);fri.setDate(mon.getDate()+4);
-            analyticsStart.value=mon.toISOString().split('T')[0];analyticsEnd.value=fri.toISOString().split('T')[0];
-        }
+        if(mode==='all'){if(activeDays.value.length>0){analyticsStart.value=[...activeDays.value].sort()[0];analyticsEnd.value=[...activeDays.value].sort().pop()}else{analyticsStart.value=todayKey.value;analyticsEnd.value=todayKey.value}}
+        else{const mon=new Date(now);mon.setDate(now.getDate()+mo-(mode*7));const fri=new Date(mon);fri.setDate(mon.getDate()+4);analyticsStart.value=mon.toISOString().split('T')[0];analyticsEnd.value=fri.toISOString().split('T')[0]}
     }
-
-    const analyticsDates=computed(()=>{
-        if(!analyticsStart.value||!analyticsEnd.value)return[];
-        return activeDays.value.filter(d=>d>=analyticsStart.value&&d<=analyticsEnd.value).sort();
-    });
-
+    const analyticsDates=computed(()=>{if(!analyticsStart.value||!analyticsEnd.value)return[];return activeDays.value.filter(d=>d>=analyticsStart.value&&d<=analyticsEnd.value).sort()});
     function isPresentOnDate(studentId,date){return attendance.value.some(a=>a.studentId===studentId&&a.date===date)}
-
-    const overviewStats=computed(()=>{
-        const dates=analyticsDates.value;const students=allStudents.value;
-        const totalSlots=dates.length*students.length;
-        let presentSlots=0;
-        for(const d of dates){for(const s of students){if(isPresentOnDate(s.id,d))presentSlots++}}
-        const absentSlots=totalSlots-presentSlots;
-        return{totalSlots,presentSlots,absentSlots,percent:totalSlots?Math.round(presentSlots/totalSlots*100):0};
-    });
-
-    const roomAnalytics=computed(()=>{
-        const dates=analyticsDates.value;
-        return rooms.map(room=>{
-            const students=allStudents.value.filter(s=>s.room===room);
-            const total=dates.length*students.length;
-            let present=0;
-            for(const d of dates){for(const s of students){if(isPresentOnDate(s.id,d))present++}}
-            return{name:room,total,present,absent:total-present,percent:total?Math.round(present/total*100):0};
-        }).sort((a,b)=>b.percent-a.percent);
-    });
-
+    const overviewStats=computed(()=>{const dates=analyticsDates.value;const students=allStudents.value;const totalSlots=dates.length*students.length;let presentSlots=0;for(const d of dates){for(const s of students){if(isPresentOnDate(s.id,d))presentSlots++}}return{totalSlots,presentSlots,absentSlots:totalSlots-presentSlots,percent:totalSlots?Math.round(presentSlots/totalSlots*100):0}});
+    const roomAnalytics=computed(()=>{const dates=analyticsDates.value;return rooms.map(room=>{const students=allStudents.value.filter(s=>s.room===room);const total=dates.length*students.length;let present=0;for(const d of dates){for(const s of students){if(isPresentOnDate(s.id,d))present++}}return{name:room,total,present,absent:total-present,percent:total?Math.round(present/total*100):0}}).sort((a,b)=>b.percent-a.percent)});
     const topRooms=computed(()=>roomAnalytics.value.slice(0,3));
+    const personAnalytics=computed(()=>{const dates=analyticsDates.value;return allStudents.value.map(s=>{let present=0;for(const d of dates){if(isPresentOnDate(s.id,d))present++}return{id:s.id,name:s.name,room:s.room,no:s.no,present,totalDays:dates.length,percent:dates.length?Math.round(present/dates.length*100):0}}).sort((a,b)=>b.percent-a.percent||a.room.localeCompare(b.room)||a.no-b.no)});
+    const filteredPersonAnalytics=computed(()=>{let list=personAnalytics.value;if(personFilterRoom.value)list=list.filter(p=>p.room===personFilterRoom.value);if(personSearch.value.trim()){const q=personSearch.value.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q)||p.id.includes(q))}return list});
+    const dayAnalytics=computed(()=>{const dates=analyticsDates.value;const students=allStudents.value;return dates.map(date=>{const total=students.length;let present=0;for(const s of students){if(isPresentOnDate(s.id,date))present++}const d=new Date(date+'T00:00:00');return{date,dayName:d.toLocaleDateString('th-TH',{weekday:'short'}),total,present,absent:total-present,percent:total?Math.round(present/total*100):0}})});
 
-    const personAnalytics=computed(()=>{
+    // 🆕 Open Person Detail with Timeline
+    function openPersonDetail(person){
         const dates=analyticsDates.value;
-        return allStudents.value.map(s=>{
-            let present=0;
-            for(const d of dates){if(isPresentOnDate(s.id,d))present++}
-            return{id:s.id,name:s.name,room:s.room,no:s.no,present,totalDays:dates.length,percent:dates.length?Math.round(present/dates.length*100):0};
-        }).sort((a,b)=>b.percent-a.percent||a.room.localeCompare(b.room)||a.no-b.no);
-    });
-
-    const filteredPersonAnalytics=computed(()=>{
-        if(!personSearch.value.trim())return personAnalytics.value;
-        const q=personSearch.value.toLowerCase();
-        return personAnalytics.value.filter(p=>p.name.toLowerCase().includes(q)||p.id.includes(q));
-    });
-
-    const dayAnalytics=computed(()=>{
-        const dates=analyticsDates.value;const students=allStudents.value;
-        return dates.map(date=>{
-            const total=students.length;
-            let present=0;
-            for(const s of students){if(isPresentOnDate(s.id,date))present++}
+        const timeline=dates.map(date=>{
+            const rec=attendance.value.find(a=>a.studentId===person.id&&a.date===date);
             const d=new Date(date+'T00:00:00');
-            return{date,dayName:d.toLocaleDateString('th-TH',{weekday:'short'}),total,present,absent:total-present,percent:total?Math.round(present/total*100):0};
+            return{date,present:!!rec,time:rec?rec.time:null,dayName:d.toLocaleDateString('th-TH',{weekday:'short'})};
         });
-    });
+        personDetail.value={
+            show:true,
+            student:{id:person.id,name:person.name,room:person.room,no:person.no},
+            presentCount:person.present,
+            absentCount:person.totalDays-person.present,
+            percent:person.percent,
+            timeline
+        };
+    }
 
     // Report
     function setReportWeek(w){const now=new Date();const dow=now.getDay();const mo=dow===0?-6:1-dow;const mon=new Date(now);mon.setDate(now.getDate()+mo-(w*7));const fri=new Date(mon);fri.setDate(mon.getDate()+4);reportStart.value=mon.toISOString().split('T')[0];reportEnd.value=fri.toISOString().split('T')[0]}
     const reportFilteredDates=computed(()=>{if(!reportStart.value||!reportEnd.value)return[];const dates=[];const s=new Date(reportStart.value+'T00:00:00');const e=new Date(reportEnd.value+'T00:00:00');const c=new Date(s);while(c<=e){dates.push(c.toISOString().split('T')[0]);c.setDate(c.getDate()+1)}return dates.filter(d=>activeDays.value.includes(d))});
     const reportStudents=computed(()=>{if(!reportRoom.value)return[];return allStudents.value.filter(s=>s.room===reportRoom.value).sort((a,b)=>a.no-b.no)});
     const reportAttendanceCount=computed(()=>attendance.value.filter(a=>{if(a.room!==reportRoom.value)return false;if(!reportFilteredDates.value.includes(a.date))return false;if(reportSession.value!=='all'&&a.session!==reportSession.value)return false;return true}).length);
-    function isPresent(sid,date){return attendance.value.some(a=>a.studentId===sid&&a.date===date&&(reportSession.value==='all'||a.session===reportSession.value))}
-    function getStudentPresentCount(sid){return reportFilteredDates.value.filter(d=>isPresent(sid,d)).length}
-    function getStudentPercent(sid){const t=reportFilteredDates.value.length;return t?Math.round(getStudentPresentCount(sid)/t*100):0}
-    const averageAttendancePercent=computed(()=>{if(reportStudents.value.length===0||reportFilteredDates.value.length===0)return 0;const t=reportStudents.value.length*reportFilteredDates.value.length;const p=reportStudents.value.reduce((s,st)=>s+getStudentPresentCount(st.id),0);return Math.round(p/t*100)});
     function formatDateShort(ds){return new Date(ds+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short'})}
     function formatDateThai(ds){if(!ds)return'';return new Date(ds+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})}
     function printReport(){window.print()}
 
-    return{step,staffIdInput,error,currentStaff,allAccounts,currentSession,selectedRoom,searchId,rooms,allStudents,filteredStudents,roomStats,todayDisplay,todayKey,confirmModal,editModal,toast,adminTab,newActiveDate,activeDays,sortedActiveDays,isTodayActive,newStudent,importText,importRoom,studentFilterRoom,filteredAdminStudents,analyticsStart,analyticsEnd,analyticsView,personSearch,analyticsDates,overviewStats,roomAnalytics,topRooms,personAnalytics,filteredPersonAnalytics,dayAnalytics,reportStart,reportEnd,reportRoom,reportSession,reportFilteredDates,reportStudents,reportAttendanceCount,averageAttendancePercent,nowDisplay,doLogin,logout,selectSession,goToAdmin,addActiveDay,removeActiveDay,clearAllDays,addWeekDays,addStudent,deleteStudent,importStudents,checked,confirmCheckIn,doCheckIn,quickUndo,openEditModal,saveEditTime,deleteRecord,getStudentNo,getStaffName,doSearch,setAnalyticsRange,setReportWeek,isPresent,getStudentPresentCount,getStudentPercent,formatDateShort,formatDateThai,printReport,showToast};
+    return{step,staffIdInput,error,currentStaff,allAccounts,currentSession,selectedRoom,searchId,rooms,allStudents,filteredStudents,roomStats,todayDisplay,todayKey,confirmModal,editModal,toast,adminTab,newActiveDate,activeDays,sortedActiveDays,isTodayActive,newStudent,studentFilterRoom,filteredAdminStudents,analyticsStart,analyticsEnd,analyticsView,personSearch,personFilterRoom,analyticsDates,overviewStats,roomAnalytics,topRooms,personAnalytics,filteredPersonAnalytics,dayAnalytics,personDetail,reportStart,reportEnd,reportRoom,reportSession,reportFilteredDates,reportStudents,reportAttendanceCount,nowDisplay,doLogin,logout,selectSession,goToAdmin,addActiveDay,removeActiveDay,clearAllDays,addWeekDays,addStudent,deleteStudent,checked,confirmCheckIn,doCheckIn,quickUndo,openEditModal,saveEditTime,deleteRecord,getStudentNo,getStaffName,doSearch,setAnalyticsRange,setReportWeek,openPersonDetail,formatDateShort,formatDateThai,printReport,showToast};
 }}).mount('#app');
 </script>
 </body>
