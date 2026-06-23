@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ABU SIMBEL | Check-in System v6</title>
+    <title>คณะสีเหลือง | Check-in System v7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -22,25 +22,25 @@
         body { background: #0A0A0A; color: #fff; font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
         .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        /* ✅ FIX: Date/Time Input ไม่ให้ทับกัน */
+        input[type="date"]{position:relative;z-index:10;background:#1a1a1a;color:#fff;-webkit-appearance:none}
+        input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;opacity:0.7}
+        input[type="time"]{position:relative;z-index:10;background:rgba(255,255,255,0.1);color:#fff}
         @media print {
-            @page { size: A4 portrait; margin: 15mm; }
-            body { background: white !important; color: black !important; font-size: 11pt; }
+            @page { size: A4 landscape; margin: 8mm; }
+            body { background: white !important; color: black !important; font-size: 9pt; }
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            .glass { background: none !important; backdrop-filter: none !important; border: none !important; }
-            table.report-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
-            table.report-table th, table.report-table td { border: 1px solid #333; padding: 4px 6px; text-align: center; }
+            #print-area { display: block !important; }
+            table.report-table { width: 100%; border-collapse: collapse; font-size: 7pt; }
+            table.report-table th, table.report-table td { border: 1px solid #333; padding: 2px 4px; text-align: center; }
             table.report-table th { background: #f0f0f0 !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             table.report-table .present { color: green; font-weight: bold; }
             table.report-table .absent { color: red; font-weight: bold; }
-            table.report-table tr:nth-child(even) { background: #fafafa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .report-header { text-align: center; margin-bottom: 15px; }
-            .report-header h1 { font-size: 18pt; margin: 0; }
-            .report-header p { font-size: 11pt; margin: 4px 0; color: #555; }
-            .report-summary { display: flex; gap: 20px; margin-top: 15px; font-size: 10pt; }
-            .report-summary div { border: 1px solid #ccc; padding: 8px 15px; border-radius: 6px; }
+            .report-header { text-align: center; margin-bottom: 8px; }
+            .report-header h1 { font-size: 14pt; margin: 0; }
+            .report-header p { font-size: 9pt; margin: 2px 0; color: #555; }
         }
-        .print-only { display: none; }
+        #print-area { display: none; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -49,13 +49,13 @@
     <div><h1 style="font-size:24px;margin-bottom:10px;">⚠️ กำลังโหลดระบบ...</h1><p style="color:#888;font-size:14px;">หากค้างเกิน 10 วินาที กรุณา Refresh</p></div>
 </div>
 
-<div id="app" v-cloak class="p-4 max-w-2xl mx-auto pb-20 no-print">
+<div id="app" v-cloak class="p-4 max-w-3xl mx-auto pb-20 no-print">
 
     <!-- ==================== LOGIN ==================== -->
     <div v-if="step==='login'" class="min-h-[80vh] flex items-center justify-center">
         <div class="glass rounded-3xl p-8 w-full text-center space-y-6">
             <div class="w-20 h-20 bg-neon-yellow/10 rounded-full flex items-center justify-center mx-auto"><i class="ph-fill ph-identification-card text-4xl text-neon-yellow"></i></div>
-            <h1 class="text-3xl font-display font-bold">STAFF CHECK-IN</h1>
+            <h1 class="text-3xl font-display font-bold">คณะสีเหลือง SYSTEM</h1>
             <form @submit.prevent="doLogin" class="space-y-4">
                 <input v-model="staffIdInput" type="text" placeholder="รหัส Staff / Admin" autofocus class="w-full px-5 py-4 bg-white/5 border border-neon-border rounded-xl text-center text-xl tracking-widest focus:border-neon-yellow focus:ring-2 focus:ring-neon-yellow/30 outline-none transition placeholder:text-gray-600">
                 <p v-if="error" class="text-red-400 text-sm font-bold animate-pulse">❌ {{ error }}</p>
@@ -95,9 +95,10 @@
                 <div class="font-bold text-lg">เช็คชื่อบ่าย</div><div class="text-xs text-gray-400">13:00 - 16:00 น.</div>
             </button>
         </div>
+        <!-- ✅ ปุ่ม Admin Panel เท่านั้น (ไม่มีปุ่มสถิติแยกแล้ว) -->
         <button v-if="currentStaff?.role==='admin'" @click="goToAdmin" class="w-full glass rounded-2xl p-5 text-left hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all group flex items-center gap-4 mt-4">
             <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 transition"><i class="ph-fill ph-gear-six text-3xl text-purple-400"></i></div>
-            <div><div class="font-bold text-lg">Admin Panel</div><div class="text-xs text-gray-400">จัดการนักเรียน • วันเช็คชื่อ • รายงาน</div></div>
+            <div><div class="font-bold text-lg">Admin Panel</div><div class="text-xs text-gray-400">สถิติ • นักเรียน • วันเช็คชื่อ • รายงาน</div></div>
         </button>
     </div>
 
@@ -133,16 +134,68 @@
             <h2 class="font-display font-bold text-lg flex items-center gap-2"><i class="ph-fill ph-gear-six text-purple-400"></i> Admin Panel</h2>
         </div>
 
-        <!-- Tab Navigation (เพิ่มแท็บ นักเรียน) -->
+        <!-- Tab Navigation (✅ เพิ่มแท็บ สถิติ) -->
         <div class="flex gap-1 bg-white/5 p-1 rounded-xl overflow-x-auto">
+            <button @click="adminTab='analytics'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='analytics'?'bg-neon-yellow text-neon-dark':'text-gray-400 hover:text-white']"><i class="ph-fill ph-chart-bar"></i> สถิติ</button>
             <button @click="adminTab='students'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='students'?'bg-purple-500 text-white':'text-gray-400 hover:text-white']"><i class="ph-fill ph-users-three"></i> นักเรียน</button>
             <button @click="adminTab='days'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='days'?'bg-purple-500 text-white':'text-gray-400 hover:text-white']"><i class="ph-fill ph-calendar-check"></i> วันเช็คชื่อ</button>
             <button @click="adminTab='report'" :class="['flex-1 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap px-3',adminTab==='report'?'bg-purple-500 text-white':'text-gray-400 hover:text-white']"><i class="ph-fill ph-printer"></i> รายงาน</button>
         </div>
 
-        <!-- 🆕 TAB: จัดการนักเรียน -->
+        <!-- 🆕 TAB: สถิติการมาเข้าสี (พร้อมปุ่มพิมพ์) -->
+        <div v-if="adminTab==='analytics'" class="space-y-4">
+            <div class="glass rounded-2xl p-4 space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="relative"><label class="text-[10px] text-gray-400 uppercase block mb-1">วันเริ่มต้น</label><input v-model="analyticsStart" type="date" class="w-full px-3 py-2.5 bg-[#1a1a1a] border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow relative z-10"></div>
+                    <div class="relative"><label class="text-[10px] text-gray-400 uppercase block mb-1">วันสิ้นสุด</label><input v-model="analyticsEnd" type="date" class="w-full px-3 py-2.5 bg-[#1a1a1a] border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow relative z-10"></div>
+                </div>
+                <div class="flex gap-2">
+                    <button @click="setAnalyticsRange(0)" class="flex-1 py-2 bg-neon-yellow/10 text-neon-yellow rounded-lg text-xs font-bold hover:bg-neon-yellow/20 transition">สัปดาห์นี้</button>
+                    <button @click="setAnalyticsRange(1)" class="flex-1 py-2 bg-white/5 text-gray-400 rounded-lg text-xs font-bold hover:bg-white/10 transition">สัปดาห์ที่แล้ว</button>
+                    <button @click="setAnalyticsRange('all')" class="flex-1 py-2 bg-white/5 text-gray-400 rounded-lg text-xs font-bold hover:bg-white/10 transition">ทั้งหมด</button>
+                </div>
+            </div>
+
+            <!-- ✅ แถบควบคุม: เลือกมุมมอง + ปุ่มพิมพ์ -->
+            <div class="flex gap-3 items-stretch">
+                <div class="flex-1 glass rounded-xl p-3">
+                    <label class="text-[10px] text-gray-400 uppercase block mb-1">เลือกมุมมอง</label>
+                    <select v-model="analyticsView" class="w-full px-3 py-2.5 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow font-bold">
+                        <option value="overview">📊 ภาพรวมคณะสีเหลือง</option>
+                        <option value="byRoom">🏫 แยกตามห้องเรียน</option>
+                        <option value="byPerson">👤 แยกตามรายบุคคล</option>
+                        <option value="byDay">📅 แยกตามวัน</option>
+                    </select>
+                </div>
+                <button @click="printAnalyticsReport" class="glass rounded-xl px-5 flex flex-col items-center justify-center gap-1 hover:bg-white/10 hover:border-neon-yellow/50 transition shrink-0 min-w-[80px]">
+                    <i class="ph-fill ph-printer text-neon-yellow text-2xl"></i>
+                    <span class="text-xs font-bold">พิมพ์</span>
+                </button>
+            </div>
+
+            <!-- Overview -->
+            <div v-if="analyticsView==='overview'" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3"><div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-neon-yellow">{{ overviewStats.totalSlots }}</div><div class="text-xs text-gray-400">ช่องทั้งหมด</div></div><div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-green-400">{{ overviewStats.presentSlots }}</div><div class="text-xs text-gray-400">มาเข้าสี</div></div><div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-red-400">{{ overviewStats.absentSlots }}</div><div class="text-xs text-gray-400">ขาด</div></div><div class="glass rounded-xl p-4 text-center"><div class="text-3xl font-bold text-white">{{ overviewStats.percent }}%</div><div class="text-xs text-gray-400">อัตราการมาเข้าสี</div></div></div>
+                <div class="glass rounded-xl p-4"><div class="flex justify-between text-xs mb-2"><span class="text-green-400">มา {{ overviewStats.presentSlots }}</span><span class="text-red-400">ขาด {{ overviewStats.absentSlots }}</span></div><div class="w-full h-4 bg-red-500/30 rounded-full overflow-hidden"><div class="h-full bg-green-500 rounded-full transition-all duration-500" :style="{width:overviewStats.percent+'%'}"></div></div></div>
+                <div class="glass rounded-xl p-4"><h4 class="font-bold text-sm mb-3"><i class="ph-fill ph-trophy text-neon-yellow"></i> Top 3 ห้องที่มาเข้าสีดีที่สุด</h4><div v-for="(room,i) in topRooms" :key="room.name" class="flex items-center gap-3 mb-2 last:mb-0"><div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :class="i===0?'bg-neon-yellow text-neon-dark':i===1?'bg-gray-300 text-gray-800':'bg-orange-400 text-white'">{{ i+1 }}</div><div class="flex-1"><div class="text-sm font-medium">{{ room.name }}</div><div class="w-full h-1.5 bg-white/10 rounded-full mt-1"><div class="h-full bg-green-400 rounded-full" :style="{width:room.percent+'%'}"></div></div></div><div class="text-sm font-bold" :class="room.percent>=80?'text-green-400':'text-red-400'">{{ room.percent }}%</div></div></div>
+            </div>
+
+            <!-- By Room -->
+            <div v-if="analyticsView==='byRoom'" class="space-y-3"><div v-for="room in roomAnalytics" :key="room.name" class="glass rounded-xl p-4"><div class="flex items-center justify-between mb-2"><div class="font-bold">{{ room.name }}</div><div class="text-lg font-bold" :class="room.percent>=80?'text-green-400':'text-red-400'">{{ room.percent }}%</div></div><div class="w-full h-3 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full rounded-full" :class="room.percent>=80?'bg-green-500':'bg-red-500'" :style="{width:room.percent+'%'}"></div></div><div class="flex justify-between text-xs text-gray-400"><span>มา {{ room.present }}/{{ room.total }}</span><span>ขาด {{ room.absent }}</span></div></div></div>
+
+            <!-- By Person -->
+            <div v-if="analyticsView==='byPerson'" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3"><div class="glass rounded-xl p-3 flex gap-2 items-center"><i class="ph-fill ph-magnifying-glass text-neon-yellow"></i><input v-model="personSearch" type="text" placeholder="ค้นหาชื่อ..." class="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-600"></div><select v-model="personFilterRoom" class="px-3 py-2 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><option value="">ทุกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select></div>
+                <div class="text-[10px] text-gray-500 px-1">💡 กดที่ชื่อนักเรียนเพื่อดูรายละเอียดรายวัน</div>
+                <div class="glass rounded-2xl overflow-hidden"><div class="max-h-[50vh] overflow-y-auto divide-y divide-white/5"><div v-for="p in filteredPersonAnalytics" :key="p.id" @click="openPersonDetail(p)" class="flex items-center justify-between p-4 hover:bg-white/[0.05] transition cursor-pointer"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0">{{ p.no }}</div><div class="min-w-0"><div class="text-sm font-medium truncate">{{ p.name }}</div><div class="text-[10px] text-gray-500">{{ p.room }} • ID:{{ p.id }}</div></div></div><div class="text-right shrink-0 ml-3 flex items-center gap-2"><div><div class="text-sm font-bold" :class="p.percent>=80?'text-green-400':'text-red-400'">{{ p.percent }}%</div><div class="text-[10px] text-gray-500">{{ p.present }}/{{ p.totalDays }}</div></div><i class="ph-fill ph-caret-right text-gray-600"></i></div></div><div v-if="filteredPersonAnalytics.length===0" class="p-8 text-center text-gray-500 text-sm">ไม่พบข้อมูล</div></div></div>
+            </div>
+
+            <!-- By Day -->
+            <div v-if="analyticsView==='byDay'" class="space-y-3"><div v-for="day in dayAnalytics" :key="day.date" class="glass rounded-xl p-4"><div class="flex items-center justify-between mb-2"><div class="font-bold text-sm">{{ formatDateThai(day.date) }} ({{ day.dayName }})</div><div class="text-lg font-bold" :class="day.percent>=80?'text-green-400':'text-red-400'">{{ day.percent }}%</div></div><div class="w-full h-3 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full rounded-full" :class="day.percent>=80?'bg-green-500':'bg-red-500'" :style="{width:day.percent+'%'}"></div></div><div class="flex justify-between text-xs text-gray-400"><span>มา {{ day.present }}/{{ day.total }}</span><span>ขาด {{ day.absent }}</span></div></div></div>
+        </div>
+
+        <!-- TAB: จัดการนักเรียน -->
         <div v-if="adminTab==='students'" class="space-y-4">
-            <!-- เพิ่มนักเรียน -->
             <div class="glass rounded-2xl p-5 space-y-3">
                 <h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-user-plus text-neon-yellow"></i> เพิ่มนักเรียน</h3>
                 <div class="grid grid-cols-2 gap-3">
@@ -155,19 +208,15 @@
                 </div>
                 <button @click="addStudent" :disabled="!newStudent.name||!newStudent.room" class="w-full py-3 bg-neon-yellow text-neon-dark font-bold rounded-xl hover:shadow-neon transition disabled:opacity-30">เพิ่มนักเรียน</button>
             </div>
-
-            <!-- Import จากข้อความ -->
             <div class="glass rounded-2xl p-5 space-y-3">
                 <h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-file-text text-blue-400"></i> Import รายชื่อ (วางข้อความ)</h3>
-                <p class="text-[10px] text-gray-400">รูปแบบ: ชื่อ,เลขประจำตัว,เลขที่ (บรรทัดละ 1 คน)</p>
+                <p class="text-[10px] text-gray-400">รูปแบบ: ชื่อ / เลขประจำตัว / เลขที่ (บรรทัดละ 1 ค่า, 3 บรรทัดต่อคน)</p>
                 <textarea v-model="importText" rows="4" placeholder="สมชาย ใจดี&#10;10001&#10;1&#10;สมหญิง รักเรียน&#10;10002&#10;2" class="w-full px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow font-mono"></textarea>
                 <div class="grid grid-cols-2 gap-3">
                     <select v-model="importRoom" class="px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><option value="" disabled>เลือกห้องที่จะนำเข้า</option><option v-for="r in rooms" :value="r">{{ r }}</option></select>
                     <button @click="importStudents" :disabled="!importText||!importRoom" class="py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-400 transition disabled:opacity-30">นำเข้า</button>
                 </div>
             </div>
-
-            <!-- รายชื่อนักเรียนทั้งหมด -->
             <div class="glass rounded-2xl p-5">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="font-bold text-base">นักเรียนทั้งหมด ({{ allStudents.length }} คน)</h3>
@@ -190,7 +239,7 @@
         <div v-if="adminTab==='days'" class="space-y-4">
             <div class="glass rounded-2xl p-5 space-y-3">
                 <h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-plus-circle text-neon-yellow"></i> เพิ่มวันเช็คชื่อ</h3>
-                <div class="flex gap-2"><input v-model="newActiveDate" type="date" class="flex-1 px-4 py-3 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow"><button @click="addActiveDay" :disabled="!newActiveDate" class="px-5 py-3 bg-neon-yellow text-neon-dark rounded-xl text-sm font-bold hover:shadow-neon transition disabled:opacity-30">เพิ่ม</button></div>
+                <div class="relative"><input v-model="newActiveDate" type="date" class="w-full px-4 py-3 bg-[#1a1a1a] border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow relative z-10"></div>
                 <div class="flex gap-2 pt-1"><button @click="addWeekDays(0)" class="flex-1 py-2 bg-white/5 text-gray-400 rounded-lg text-xs font-bold hover:bg-white/10 transition">+ สัปดาห์นี้</button><button @click="addWeekDays(1)" class="flex-1 py-2 bg-white/5 text-gray-400 rounded-lg text-xs font-bold hover:bg-white/10 transition">+ สัปดาห์หน้า</button></div>
             </div>
             <div class="glass rounded-2xl p-5">
@@ -205,33 +254,45 @@
             </div>
         </div>
 
-        <!-- TAB: รายงาน A4 -->
+        <!-- TAB: รายงาน A4 (✅ คอลัมน์ใหม่: เลขที่ | เลขประจำตัว | ชื่อ) -->
         <div v-if="adminTab==='report'" class="space-y-4">
             <div class="glass rounded-2xl p-5 space-y-3">
                 <h3 class="font-bold text-base flex items-center gap-2"><i class="ph-fill ph-funnel text-neon-yellow"></i> ตัวกรองรายงาน</h3>
-                <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-gray-400 uppercase block mb-1">วันเริ่มต้น</label><input v-model="reportStart" type="date" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"></div><div><label class="text-[10px] text-gray-400 uppercase block mb-1">วันสิ้นสุด</label><input v-model="reportEnd" type="date" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"></div></div>
-                <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-gray-400 uppercase block mb-1">ห้องเรียน</label><select v-model="reportRoom" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"><option value="" disabled>เลือกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select></div><div><label class="text-[10px] text-gray-400 uppercase block mb-1">ช่วงเวลา</label><select v-model="reportSession" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"><option value="morning">ภาคเช้า</option><option value="afternoon">ภาคบ่าย</option><option value="all">ทั้งสองช่วง</option></select></div></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="relative"><label class="text-[10px] text-gray-400 uppercase block mb-1">วันเริ่มต้น</label><input v-model="reportStart" type="date" class="w-full px-3 py-2.5 bg-[#1a1a1a] border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow relative z-10"></div>
+                    <div class="relative"><label class="text-[10px] text-gray-400 uppercase block mb-1">วันสิ้นสุด</label><input v-model="reportEnd" type="date" class="w-full px-3 py-2.5 bg-[#1a1a1a] border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow relative z-10"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-gray-400 uppercase block mb-1">ห้องเรียน</label><select v-model="reportRoom" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"><option value="" disabled>เลือกห้อง</option><option v-for="r in rooms" :value="r">{{ r }}</option></select></div>
+                    <div><label class="text-[10px] text-gray-400 uppercase block mb-1">ช่วงเวลา</label><select v-model="reportSession" class="w-full px-3 py-2 bg-white/5 border border-neon-border rounded-lg text-sm outline-none focus:border-neon-yellow"><option value="morning">ภาคเช้า</option><option value="afternoon">ภาคบ่าย</option><option value="all">ทั้งสองช่วง</option></select></div>
+                </div>
                 <div class="flex gap-2 pt-1"><button @click="setReportWeek(0)" class="flex-1 py-2 bg-neon-yellow/10 text-neon-yellow rounded-lg text-xs font-bold hover:bg-neon-yellow/20 transition">สัปดาห์นี้</button><button @click="setReportWeek(1)" class="flex-1 py-2 bg-white/5 text-gray-400 rounded-lg text-xs font-bold hover:bg-white/10 transition">สัปดาห์ที่แล้ว</button></div>
             </div>
-            <div v-if="reportFilteredDates.length>0&&reportRoom" class="glass rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">📅 วันที่เปิด: <span class="text-white font-bold">{{ reportFilteredDates.length }} วัน</span></div><div class="text-xs text-gray-400">📊 ข้อมูล {{ reportAttendanceCount }} รายการ</div><div v-if="reportExcludedDates.length>0" class="text-[10px] text-red-400 mt-2">⚠️ ตัดออก {{ reportExcludedDates.length }} วัน</div></div>
+            <div v-if="reportFilteredDates.length>0&&reportRoom" class="glass rounded-xl p-4">
+                <div class="text-xs text-gray-400 mb-1">📅 วันที่เปิด: <span class="text-white font-bold">{{ reportFilteredDates.length }} วัน</span></div>
+                <div class="text-xs text-gray-400">📊 ข้อมูล {{ reportAttendanceCount }} รายการ</div>
+                <div v-if="reportExcludedDates.length>0" class="text-[10px] text-red-400 mt-2">⚠️ ตัดออก {{ reportExcludedDates.length }} วัน</div>
+            </div>
             <button @click="printReport" :disabled="!reportRoom||reportFilteredDates.length===0" class="w-full py-4 bg-purple-500 text-white font-bold text-lg rounded-xl hover:bg-purple-400 active:scale-95 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"><i class="ph-fill ph-printer text-xl"></i> พิมพ์รายงาน A4</button>
         </div>
     </div>
 
     <!-- ==================== MODALS ==================== -->
+    <!-- Person Detail Modal -->
+    <transition name="fade"><div v-if="personDetail.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="personDetail.show=false"><div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto"><div class="flex justify-between items-start"><div><h3 class="font-bold text-lg text-neon-yellow">{{ personDetail.student?.name }}</h3><p class="text-xs text-gray-400">{{ personDetail.student?.room }} • เลขที่ {{ personDetail.student?.no }} • ID:{{ personDetail.student?.id }}</p></div><button @click="personDetail.show=false" class="text-gray-400 hover:text-white"><i class="ph ph-x text-xl"></i></button></div><div class="grid grid-cols-3 gap-2"><div class="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center"><div class="text-xl font-bold text-green-400">{{ personDetail.presentCount }}</div><div class="text-[10px] text-gray-500">มาเข้าสี</div></div><div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-center"><div class="text-xl font-bold text-red-400">{{ personDetail.absentCount }}</div><div class="text-[10px] text-gray-500">ขาด</div></div><div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center"><div class="text-xl font-bold text-white">{{ personDetail.percent }}%</div><div class="text-[10px] text-gray-500">รวม</div></div></div><div><h4 class="text-xs font-bold text-gray-400 uppercase mb-3">ประวัติการมาเข้าสีรายวัน</h4><div class="space-y-2"><div v-for="d in personDetail.timeline" :key="d.date" class="flex items-center gap-3 p-2.5 rounded-xl" :class="d.present?'bg-green-500/10 border border-green-500/20':'bg-red-500/10 border border-red-500/20'"><div class="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0" :class="d.present?'bg-green-500 text-white':'bg-red-500/30 text-red-400'"><i :class="d.present?'ph-fill ph-check':'ph-fill ph-x'"></i></div><div class="flex-1"><div class="text-sm font-medium" :class="d.present?'text-green-400':'text-red-400'">{{ d.present?'มาเข้าสี':'ขาด' }}</div><div class="text-[10px] text-gray-500">{{ formatDateThai(d.date) }} ({{ d.dayName }})</div></div><div v-if="d.time" class="text-[10px] text-gray-500 font-mono shrink-0">{{ d.time }}</div></div></div></div></div></div></transition>
+
+    <!-- Confirm Check-in Modal -->
     <transition name="fade"><div v-if="confirmModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="confirmModal.show=false"><div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl"><div class="w-14 h-14 bg-neon-yellow/10 rounded-full flex items-center justify-center mx-auto"><i class="ph-fill ph-user-check text-2xl text-neon-yellow"></i></div><h3 class="font-bold text-lg">ยืนยันการเช็คชื่อ</h3><div class="glass rounded-xl p-3 space-y-1"><p class="text-neon-yellow font-bold">{{ confirmModal.student?.name }}</p><p class="text-xs text-gray-400">ID:{{ confirmModal.student?.id }} • เลขที่ {{ confirmModal.student?.no }}</p><p class="text-[10px] text-gray-500 mt-1">{{ selectedRoom }} • {{ currentSession==='morning'?'เช้า':'บ่าย' }} • {{ todayDisplay }}</p></div><div class="flex gap-3 pt-1"><button @click="confirmModal.show=false" class="flex-1 py-3 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition">ยกเลิก</button><button @click="doCheckIn" class="flex-1 py-3 bg-neon-yellow text-neon-dark font-bold rounded-xl text-sm hover:shadow-neon-strong transition">ยืนยัน ✓</button></div></div></div></transition>
 
+    <!-- Edit Modal -->
     <transition name="fade"><div v-if="editModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="editModal.show=false"><div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-xs space-y-4 shadow-2xl"><div class="flex justify-between items-center"><h3 class="font-bold flex items-center gap-2"><i class="ph-fill ph-pencil-simple text-neon-yellow"></i> จัดการรายการ</h3><button @click="editModal.show=false" class="text-gray-400 hover:text-white"><i class="ph ph-x text-lg"></i></button></div><div class="glass rounded-xl p-4 space-y-2"><p class="text-neon-yellow font-bold text-base">{{ editModal.record?.studentName }}</p><p class="text-xs text-gray-400">ID:{{ editModal.record?.studentId }} • เลขที่ {{ getStudentNo(editModal.record?.studentId) }}</p><div class="pt-2 border-t border-white/10 space-y-1.5"><div class="flex justify-between text-xs"><span class="text-gray-500">วันที่:</span><span>{{ editModal.record?.date }}</span></div><div class="flex justify-between text-xs"><span class="text-gray-500">เวลา:</span><input v-if="editModal.isEditing" v-model="editModal.editTime" type="time" class="bg-white/10 border border-neon-border rounded px-2 py-1 text-white outline-none text-xs focus:border-neon-yellow w-24 text-center"><span v-else class="text-white font-mono">{{ editModal.record?.time }}</span></div><div class="flex justify-between text-xs"><span class="text-gray-500">ผู้เช็ค:</span><span>{{ getStaffName(editModal.record?.staffId) }}</span></div></div></div><div class="flex gap-3 pt-1"><button v-if="!editModal.isEditing" @click="editModal.isEditing=true" class="flex-1 py-3 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1"><i class="ph-fill ph-pencil-simple"></i> แก้เวลา</button><button v-else @click="saveEditTime" class="flex-1 py-3 bg-neon-yellow text-neon-dark rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1"><i class="ph-fill ph-check"></i> บันทึก</button><button @click="deleteRecord" class="flex-1 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1"><i class="ph-fill ph-trash"></i> ลบ</button></div></div></div></transition>
 
+    <!-- Toast -->
     <transition name="fade"><div v-if="toast.show" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-3 rounded-xl shadow-2xl font-bold text-sm whitespace-nowrap" :class="toast.ok?'bg-green-500 text-white':'bg-red-500 text-white'">{{ toast.msg }}</div></transition>
 </div>
 
-<!-- PRINT TEMPLATE -->
-<div class="print-only" style="padding:0;">
-    <div class="report-header"><h1>รายงานการเข้าเรียน คณะสีอะบูซิมเบล</h1><p><strong>ห้อง:</strong> {{ reportRoom }} | <strong>ช่วงเวลา:</strong> {{ reportSession==='all'?'เช้า+บ่าย':reportSession==='morning'?'ภาคเช้า':'ภาคบ่าย' }}</p><p><strong>วันที่เปิด:</strong> {{ reportFilteredDates.length }} วัน ({{ formatDateThai(reportStart) }} - {{ formatDateThai(reportEnd) }})</p><p style="font-size:9pt;color:#888;">พิมพ์เมื่อ: {{ nowDisplay }}</p></div>
-    <table class="report-table" v-if="reportRoom&&reportFilteredDates.length>0"><thead><tr><th style="width:30px">เลขที่</th><th style="text-align:left;min-width:120px">ชื่อ-นามสกุล</th><th v-for="d in reportFilteredDates" :key="d" style="min-width:50px">{{ formatDateShort(d) }}</th><th style="width:40px">มา</th><th style="width:40px">ขาด</th><th style="width:45px">%</th></tr></thead><tbody><tr v-for="stu in reportStudents" :key="stu.id"><td>{{ stu.no }}</td><td style="text-align:left">{{ stu.name }}</td><td v-for="d in reportFilteredDates" :key="d" :class="isPresent(stu.id,d)?'present':'absent'">{{ isPresent(stu.id,d)?'✓':'✗' }}</td><td class="present">{{ getStudentPresentCount(stu.id) }}</td><td class="absent">{{ reportFilteredDates.length-getStudentPresentCount(stu.id) }}</td><td><strong>{{ getStudentPercent(stu.id) }}%</strong></td></tr></tbody></table>
-    <div class="report-summary" v-if="reportRoom&&reportFilteredDates.length>0"><div><strong>นักเรียน:</strong> {{ reportStudents.length }} คน</div><div><strong>วันที่เปิด:</strong> {{ reportFilteredDates.length }} วัน</div><div><strong>% มาเรียนเฉลี่ย:</strong> {{ averageAttendancePercent }}%</div></div>
-</div>
+<!-- ✅ Print Area (Plain HTML - ไม่ใช้ Vue Template ป้องกัน {{ }} บน Safari) -->
+<div id="print-area"></div>
 
 <script>
 document.getElementById('fallback-msg').style.display = 'none';
@@ -242,15 +303,17 @@ createApp({ setup() {
     const toast = ref({ show: false, msg: '', ok: true });
     const confirmModal = ref({ show: false, student: null });
     const editModal = ref({ show: false, record: null, isEditing: false, editTime: '' });
-    const adminTab = ref('students');
+    const adminTab = ref('analytics');
     const newActiveDate = ref('');
     const reportStart = ref(''), reportEnd = ref(''), reportRoom = ref(''), reportSession = ref('morning');
-
-    // 🆕 Student Management State
     const newStudent = ref({ name: '', id: '', room: '', no: 1 });
     const importText = ref('');
     const importRoom = ref('');
     const studentFilterRoom = ref('');
+    // Analytics State
+    const analyticsStart = ref(''), analyticsEnd = ref(''), analyticsView = ref('overview');
+    const personSearch = ref(''), personFilterRoom = ref('');
+    const personDetail = ref({ show: false, student: null, presentCount: 0, absentCount: 0, percent: 0, timeline: [] });
 
     const todayKey = computed(() => new Date().toISOString().split('T')[0]);
     const todayDisplay = computed(() => new Date().toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' }));
@@ -263,7 +326,6 @@ createApp({ setup() {
     ];
     const rooms = ['ม.4/1','ม.4/2','ม.5/1','ม.5/2','ม.6/1','ม.6/2'];
 
-    // ✅ โหลดนักเรียนจาก LocalStorage หรือสร้าง Mock Data
     const defaultStudents = [];
     let dsid = 10000;
     rooms.forEach(r => { for (let i = 1; i <= 10; i++) { dsid++; defaultStudents.push({ id: String(dsid), no: i, name: 'นักเรียน ' + dsid, room: r }); } });
@@ -273,14 +335,14 @@ createApp({ setup() {
 
     const activeDays = ref(JSON.parse(localStorage.getItem('abs_active_days') || '[]'));
     watch(activeDays, val => localStorage.setItem('abs_active_days', JSON.stringify(val)), { deep: true });
-    const attendance = ref(JSON.parse(localStorage.getItem('abs_v6') || '[]'));
-    watch(attendance, val => localStorage.setItem('abs_v6', JSON.stringify(val)), { deep: true });
+    const attendance = ref(JSON.parse(localStorage.getItem('abs_v7') || '[]'));
+    watch(attendance, val => localStorage.setItem('abs_v7', JSON.stringify(val)), { deep: true });
 
     // Auth
     function doLogin() { error.value = ''; const f = allAccounts.find(a => a.id === staffIdInput.value.trim().toUpperCase()); if (!f) { error.value = 'รหัสไม่ถูกต้อง'; return; } currentStaff.value = f; step.value = 'session'; }
     function logout() { currentStaff.value = null; staffIdInput.value = ''; step.value = 'login'; }
     function selectSession(s) { currentSession.value = s; selectedRoom.value = ''; searchId.value = ''; step.value = 'checkin'; }
-    function goToAdmin() { adminTab.value = 'students'; step.value = 'admin'; }
+    function goToAdmin() { adminTab.value = 'analytics'; setAnalyticsRange(0); step.value = 'admin'; }
 
     // Active Days
     const isTodayActive = computed(() => activeDays.value.includes(todayKey.value));
@@ -290,7 +352,7 @@ createApp({ setup() {
     function clearAllDays() { if (confirm('ล้างทั้งหมด?')) { activeDays.value = []; showToast('ล้างแล้ว', false); } }
     function addWeekDays(weeksAhead) { const now = new Date(); const dow = now.getDay(); const mo = dow === 0 ? -6 : 1 - dow; const mon = new Date(now); mon.setDate(now.getDate() + mo + (weeksAhead * 7)); let added = 0; for (let i = 0; i < 5; i++) { const d = new Date(mon); d.setDate(mon.getDate() + i); const ds = d.toISOString().split('T')[0]; if (!activeDays.value.includes(ds)) { activeDays.value.push(ds); added++; } } showToast('✅ เพิ่ม ' + added + ' วัน', true); }
 
-    // 🆕 Student CRUD
+    // Student CRUD
     function addStudent() {
         if (!newStudent.value.name || !newStudent.value.room) return;
         const sid = newStudent.value.id || String(Date.now()).slice(-6);
@@ -299,7 +361,6 @@ createApp({ setup() {
         newStudent.value = { name: '', id: '', room: '', no: 1 };
         showToast('✅ เพิ่มนักเรียนสำเร็จ', true);
     }
-
     function deleteStudent(id) {
         const stu = allStudents.value.find(s => s.id === id);
         if (!stu) return;
@@ -308,12 +369,10 @@ createApp({ setup() {
             showToast('🗑️ ลบแล้ว', false);
         }
     }
-
     function importStudents() {
         if (!importText.value || !importRoom.value) return;
         const lines = importText.value.split('\n').map(l => l.trim()).filter(l => l);
         let added = 0;
-        // รองรับหลายรูปแบบ: "ชื่อ", "ชื่อ\tID\tNo", "ชื่อ,ID,No"
         for (let i = 0; i < lines.length; i += 3) {
             const name = lines[i];
             const id = lines[i + 1] || String(Date.now()).slice(-6) + added;
@@ -326,18 +385,16 @@ createApp({ setup() {
         importText.value = '';
         showToast('✅ นำเข้า ' + added + ' คน', true);
     }
-
     function getNextNo(room) {
         const inRoom = allStudents.value.filter(s => s.room === room);
         return inRoom.length > 0 ? Math.max(...inRoom.map(s => s.no)) + 1 : 1;
     }
-
     const filteredAdminStudents = computed(() => {
         if (!studentFilterRoom.value) return [...allStudents.value].sort((a, b) => a.room.localeCompare(b.room) || a.no - b.no);
         return allStudents.value.filter(s => s.room === studentFilterRoom.value).sort((a, b) => a.no - b.no);
     });
 
-    // Check-in Logic (ใช้ allStudents.value แทน allStudents array เดิม)
+    // Check-in Logic
     const filteredStudents = computed(() => { if (!selectedRoom.value) return []; let l = allStudents.value.filter(s => s.room === selectedRoom.value); if (searchId.value.trim()) l = l.filter(s => s.id.includes(searchId.value.trim())); return l.sort((a, b) => a.no - b.no); });
     const roomStats = computed(() => { if (!selectedRoom.value || !currentSession.value) return { total: 0, present: 0, absent: 0, percent: 0 }; const t = allStudents.value.filter(s => s.room === selectedRoom.value).length; const p = attendance.value.filter(a => a.room === selectedRoom.value && a.session === currentSession.value && a.date === todayKey.value).length; return { total: t, present: p, absent: t - p, percent: t ? Math.round(p / t * 100) : 0 }; });
     function checked(id) { return attendance.value.some(a => a.studentId === id && a.session === currentSession.value && a.date === todayKey.value); }
@@ -353,9 +410,74 @@ createApp({ setup() {
     function doSearch() { const f = filteredStudents.value[0]; if (f && !checked(f.id)) confirmCheckIn(f); else if (f && checked(f.id)) openEditModal(f); else showToast('ไม่พบ', false); }
     function showToast(m, o) { toast.value = { show: true, msg: m, ok: o }; setTimeout(() => toast.value.show = false, 2500); }
 
-    // Report
+    // ===== ANALYTICS ENGINE =====
+    function setAnalyticsRange(mode) {
+        const now = new Date(); const dow = now.getDay(); const mo = dow === 0 ? -6 : 1 - dow;
+        if (mode === 'all') {
+            const dates = [...activeDays.value].sort();
+            if (dates.length > 0) { analyticsStart.value = dates[0]; analyticsEnd.value = dates[dates.length - 1]; }
+            else { analyticsStart.value = todayKey.value; analyticsEnd.value = todayKey.value; }
+        } else {
+            const mon = new Date(now); mon.setDate(now.getDate() + mo - (mode * 7));
+            const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+            analyticsStart.value = mon.toISOString().split('T')[0]; analyticsEnd.value = fri.toISOString().split('T')[0];
+        }
+    }
+    const analyticsDates = computed(() => {
+        if (!analyticsStart.value || !analyticsEnd.value) return [];
+        return activeDays.value.filter(d => d >= analyticsStart.value && d <= analyticsEnd.value).sort();
+    });
+    function isPresentOnDate(sid, date) { return attendance.value.some(a => a.studentId === sid && a.date === date); }
+    const overviewStats = computed(() => {
+        const dates = analyticsDates.value; const students = allStudents.value;
+        const total = dates.length * students.length; let present = 0;
+        for (const d of dates) { for (const s of students) { if (isPresentOnDate(s.id, d)) present++; } }
+        return { totalSlots: total, presentSlots: present, absentSlots: total - present, percent: total ? Math.round(present / total * 100) : 0 };
+    });
+    const roomAnalytics = computed(() => {
+        const dates = analyticsDates.value;
+        return rooms.map(room => {
+            const students = allStudents.value.filter(s => s.room === room);
+            const total = dates.length * students.length; let present = 0;
+            for (const d of dates) { for (const s of students) { if (isPresentOnDate(s.id, d)) present++; } }
+            return { name: room, total, present, absent: total - present, percent: total ? Math.round(present / total * 100) : 0 };
+        }).sort((a, b) => b.percent - a.percent);
+    });
+    const topRooms = computed(() => roomAnalytics.value.slice(0, 3));
+    const personAnalytics = computed(() => {
+        const dates = analyticsDates.value;
+        return allStudents.value.map(s => {
+            let present = 0; for (const d of dates) { if (isPresentOnDate(s.id, d)) present++; }
+            return { id: s.id, name: s.name, room: s.room, no: s.no, present, totalDays: dates.length, percent: dates.length ? Math.round(present / dates.length * 100) : 0 };
+        }).sort((a, b) => b.percent - a.percent || a.room.localeCompare(b.room) || a.no - b.no);
+    });
+    const filteredPersonAnalytics = computed(() => {
+        let list = personAnalytics.value;
+        if (personFilterRoom.value) list = list.filter(p => p.room === personFilterRoom.value);
+        if (personSearch.value.trim()) { const q = personSearch.value.toLowerCase(); list = list.filter(p => p.name.toLowerCase().includes(q) || p.id.includes(q)); }
+        return list;
+    });
+    const dayAnalytics = computed(() => {
+        const dates = analyticsDates.value; const students = allStudents.value;
+        return dates.map(date => {
+            const total = students.length; let present = 0;
+            for (const s of students) { if (isPresentOnDate(s.id, date)) present++; }
+            const d = new Date(date + 'T00:00:00');
+            return { date, dayName: d.toLocaleDateString('th-TH', { weekday: 'short' }), total, present, absent: total - present, percent: total ? Math.round(present / total * 100) : 0 };
+        });
+    });
+    function openPersonDetail(person) {
+        const dates = analyticsDates.value;
+        const timeline = dates.map(date => {
+            const rec = attendance.value.find(a => a.studentId === person.id && a.date === date);
+            const d = new Date(date + 'T00:00:00');
+            return { date, present: !!rec, time: rec ? rec.time : null, dayName: d.toLocaleDateString('th-TH', { weekday: 'short' }) };
+        });
+        personDetail.value = { show: true, student: { id: person.id, name: person.name, room: person.room, no: person.no }, presentCount: person.present, absentCount: person.totalDays - person.present, percent: person.percent, timeline };
+    }
+
+    // ===== REPORT ENGINE =====
     function setReportWeek(weeksAgo) { const now = new Date(); const dow = now.getDay(); const mo = dow === 0 ? -6 : 1 - dow; const mon = new Date(now); mon.setDate(now.getDate() + mo - (weeksAgo * 7)); const fri = new Date(mon); fri.setDate(mon.getDate() + 4); reportStart.value = mon.toISOString().split('T')[0]; reportEnd.value = fri.toISOString().split('T')[0]; }
-    function getRoomStudentCount(room) { return allStudents.value.filter(s => s.room === room).length; }
     const reportFilteredDates = computed(() => { if (!reportStart.value || !reportEnd.value) return []; const dates = []; const start = new Date(reportStart.value + 'T00:00:00'); const end = new Date(reportEnd.value + 'T00:00:00'); const cur = new Date(start); while (cur <= end) { dates.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); } return dates.filter(d => activeDays.value.includes(d)); });
     const reportExcludedDates = computed(() => { if (!reportStart.value || !reportEnd.value) return []; const dates = []; const start = new Date(reportStart.value + 'T00:00:00'); const end = new Date(reportEnd.value + 'T00:00:00'); const cur = new Date(start); while (cur <= end) { const ds = cur.toISOString().split('T')[0]; if (!activeDays.value.includes(ds) && cur.getDay() !== 0 && cur.getDay() !== 6) dates.push(formatDateShort(ds)); cur.setDate(cur.getDate() + 1); } return dates; });
     const reportStudents = computed(() => { if (!reportRoom.value) return []; return allStudents.value.filter(s => s.room === reportRoom.value).sort((a, b) => a.no - b.no); });
@@ -366,9 +488,68 @@ createApp({ setup() {
     const averageAttendancePercent = computed(() => { if (reportStudents.value.length === 0 || reportFilteredDates.value.length === 0) return 0; const total = reportStudents.value.length * reportFilteredDates.value.length; const present = reportStudents.value.reduce((s, st) => s + getStudentPresentCount(st.id), 0); return Math.round(present / total * 100); });
     function formatDateShort(ds) { return new Date(ds + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }); }
     function formatDateThai(ds) { if (!ds) return ''; return new Date(ds + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }); }
-    function printReport() { window.print(); }
 
-    return { step, staffIdInput, error, currentStaff, allAccounts, currentSession, selectedRoom, searchId, rooms, allStudents, filteredStudents, roomStats, todayDisplay, todayKey, confirmModal, editModal, toast, adminTab, newActiveDate, activeDays, sortedActiveDays, isTodayActive, newStudent, importText, importRoom, studentFilterRoom, filteredAdminStudents, reportStart, reportEnd, reportRoom, reportSession, reportFilteredDates, reportExcludedDates, reportStudents, reportAttendanceCount, averageAttendancePercent, nowDisplay, doLogin, logout, selectSession, goToAdmin, addActiveDay, removeActiveDay, clearAllDays, addWeekDays, addStudent, deleteStudent, importStudents, checked, confirmCheckIn, doCheckIn, quickUndo, openEditModal, saveEditTime, deleteRecord, getStudentNo, getStaffName, doSearch, setReportWeek, getRoomStudentCount, isPresent, getStudentPresentCount, getStudentPercent, formatDateShort, formatDateThai, printReport, showToast };
+    // ✅ ฟังก์ชันสร้าง HTML ตารางสำหรับพิมพ์ (ใช้ร่วมกันทั้ง Report A4 และ Analytics Print)
+    // ✅ คอลัมน์: เลขที่ | เลขประจำตัว | ชื่อ-นามสกุล | วันที่... | มา | ขาด | %
+    function buildPrintTableHTML(title, subtitle, students, dates, sessionFilter) {
+        let rows = '';
+        students.forEach(stu => {
+            let cells = '<td>' + stu.no + '</td><td>' + stu.id + '</td><td style="text-align:left">' + stu.name + '</td>';
+            let presentCount = 0;
+            dates.forEach(d => {
+                const isP = attendance.value.some(a => a.studentId === stu.id && a.date === d && (sessionFilter === 'all' || a.session === sessionFilter));
+                if (isP) presentCount++;
+                cells += '<td class="' + (isP ? 'present' : 'absent') + '">' + (isP ? '✓' : '✗') + '</td>';
+            });
+            const absent = dates.length - presentCount;
+            const pct = dates.length ? Math.round(presentCount / dates.length * 100) : 0;
+            cells += '<td class="present">' + presentCount + '</td><td class="absent">' + absent + '</td><td><strong>' + pct + '%</strong></td>';
+            rows += '<tr>' + cells + '</tr>';
+        });
+        let headerCells = '<th style="width:25px">เลขที่</th><th style="width:50px">เลขประจำตัว</th><th style="text-align:left;min-width:100px">ชื่อ-นามสกุล</th>';
+        dates.forEach(d => { headerCells += '<th style="min-width:40px">' + formatDateShort(d) + '</th>'; });
+        headerCells += '<th style="width:30px">มา</th><th style="width:30px">ขาด</th><th style="width:35px">%</th>';
+        return '<div class="report-header"><h1>' + title + '</h1><p>' + subtitle + '</p><p style="font-size:8pt;color:#888;">พิมพ์เมื่อ: ' + nowDisplay.value + '</p></div><table class="report-table"><thead><tr>' + headerCells + '</tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    // ✅ พิมพ์รายงาน A4 (จากแท็บ รายงาน)
+    function printReport() {
+        if (!reportRoom.value || reportFilteredDates.value.length === 0) return;
+        const printArea = document.getElementById('print-area');
+        const sessionLabel = reportSession.value === 'all' ? 'เช้า+บ่าย' : reportSession.value === 'morning' ? 'ภาคเช้า' : 'ภาคบ่าย';
+        printArea.innerHTML = buildPrintTableHTML(
+            'รายงานการมาเข้าสี คณะสีเหลือง',
+            '<strong>ห้อง:</strong> ' + reportRoom.value + ' | <strong>ช่วงเวลา:</strong> ' + sessionLabel + ' | <strong>วันที่:</strong> ' + reportFilteredDates.value.length + ' วัน (' + formatDateThai(reportStart.value) + ' - ' + formatDateThai(reportEnd.value) + ')',
+            reportStudents.value, reportFilteredDates.value, reportSession.value
+        );
+        setTimeout(() => window.print(), 100);
+    }
+
+    // ✅ พิมพ์สถิติ (จากแท็บ สถิติ - ใช้ข้อมูลตามมุมมองปัจจุบัน)
+    function printAnalyticsReport() {
+        const printArea = document.getElementById('print-area');
+        const startStr = formatDateThai(analyticsStart.value);
+        const endStr = formatDateThai(analyticsEnd.value);
+        const dates = analyticsDates.value;
+        if (dates.length === 0) { showToast('ไม่มีข้อมูลในช่วงวันที่เลือก', false); return; }
+
+        let title = 'สถิติการมาเข้าสี คณะสีเหลือง';
+        let subtitle = '';
+        let students = [];
+
+        if (analyticsView.value === 'byPerson') {
+            subtitle = 'แยกตามรายบุคคล | ' + startStr + ' - ' + endStr + ' (' + dates.length + ' วัน)';
+            students = filteredPersonAnalytics.value.map(p => ({ id: p.id, name: p.name, room: p.room, no: p.no }));
+        } else {
+            subtitle = 'ภาพรวม' + (analyticsView.value === 'byRoom' ? ' แยกห้อง' : '') + ' | ' + startStr + ' - ' + endStr + ' (' + dates.length + ' วัน)';
+            students = [...allStudents.value].sort((a, b) => a.room.localeCompare(b.room) || a.no - b.no);
+        }
+
+        printArea.innerHTML = buildPrintTableHTML(title, subtitle, students, dates, 'all');
+        setTimeout(() => window.print(), 100);
+    }
+
+    return { step, staffIdInput, error, currentStaff, allAccounts, currentSession, selectedRoom, searchId, rooms, allStudents, filteredStudents, roomStats, todayDisplay, todayKey, confirmModal, editModal, toast, adminTab, newActiveDate, activeDays, sortedActiveDays, isTodayActive, newStudent, importText, importRoom, studentFilterRoom, filteredAdminStudents, analyticsStart, analyticsEnd, analyticsView, personSearch, personFilterRoom, analyticsDates, overviewStats, roomAnalytics, topRooms, personAnalytics, filteredPersonAnalytics, dayAnalytics, personDetail, reportStart, reportEnd, reportRoom, reportSession, reportFilteredDates, reportExcludedDates, reportStudents, reportAttendanceCount, averageAttendancePercent, nowDisplay, doLogin, logout, selectSession, goToAdmin, addActiveDay, removeActiveDay, clearAllDays, addWeekDays, addStudent, deleteStudent, importStudents, checked, confirmCheckIn, doCheckIn, quickUndo, openEditModal, saveEditTime, deleteRecord, getStudentNo, getStaffName, doSearch, setAnalyticsRange, setReportWeek, openPersonDetail, formatDateShort, formatDateThai, printReport, printAnalyticsReport, showToast };
 }}).mount('#app');
 </script>
 </body>
