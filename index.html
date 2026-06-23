@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ABU SIMBEL | Staff Check-in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: { neon: { yellow: '#CCFF00', dark: '#0A0A0A', border: '#2A2A2A' } },
+                fontFamily: { display: ['Orbitron','sans-serif'], body: ['Prompt','sans-serif'] },
+                boxShadow: { neon: '0 0 15px rgba(204,255,0,0.4)' }
+            }}
+        }
+    </script>
+    <style>
+        [v-cloak] { display: none !important; }
+        body { background:#0A0A0A; color:#fff; font-family:'Prompt',sans-serif; -webkit-tap-highlight-color:transparent; }
+        .glass { background:rgba(255,255,255,0.05); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="min-h-screen">
+<div id="app" v-cloak class="p-4 max-w-2xl mx-auto">
+
+    <!-- LOGIN -->
+    <div v-if="step==='login'" class="min-h-[80vh] flex items-center justify-center">
+        <div class="glass rounded-3xl p-8 w-full text-center space-y-6">
+            <div class="w-20 h-20 bg-neon-yellow/10 rounded-full flex items-center justify-center mx-auto">
+                <i class="ph-fill ph-identification-card text-4xl text-neon-yellow"></i>
+            </div>
+            <h1 class="text-3xl font-display font-bold">STAFF CHECK-IN</h1>
+            <form @submit.prevent="doLogin" class="space-y-4">
+                <input v-model="staffId" type="text" placeholder="รหัส Staff (ST001)" autofocus
+                    class="w-full px-5 py-4 bg-white/5 border border-neon-border rounded-xl text-center text-xl tracking-widest focus:border-neon-yellow outline-none">
+                <p v-if="error" class="text-red-400 text-sm font-bold">❌ {{error}}</p>
+                <button type="submit" :disabled="!staffId.trim()"
+                    class="w-full py-4 bg-neon-yellow text-neon-dark font-bold text-lg rounded-xl hover:shadow-neon transition disabled:opacity-30">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+            <div class="flex flex-wrap gap-2 justify-center pt-4 border-t border-white/10">
+                <button v-for="a in staffList" :key="a.id" @click="staffId=a.id"
+                    class="px-3 py-1 bg-white/5 rounded-full text-xs text-gray-400 hover:text-neon-yellow">{{a.id}}</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SESSION SELECT -->
+    <div v-else-if="step==='session'" class="space-y-6">
+        <div class="glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-neon-yellow/20 rounded-full flex items-center justify-center text-neon-yellow"><i class="ph-fill ph-user-circle text-xl"></i></div>
+                <div><div class="font-bold">{{currentStaff.name}}</div><div class="text-xs text-gray-400">{{todayDisplay}}</div></div>
+            </div>
+            <button @click="logout" class="text-red-400 text-sm">ออก</button>
+        </div>
+        <h3 class="text-xl font-display font-bold">เลือกช่วงเวลา</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <button @click="selectSession('morning')" class="glass rounded-2xl p-6 text-left hover:border-neon-yellow/50 hover:shadow-neon transition">
+                <i class="ph-fill ph-sun text-3xl text-orange-400 mb-3"></i>
+                <div class="font-bold text-lg">ภาคเช้า</div>
+                <div class="text-xs text-gray-400">08:00-12:00</div>
+            </button>
+            <button @click="selectSession('afternoon')" class="glass rounded-2xl p-6 text-left hover:border-neon-yellow/50 hover:shadow-neon transition">
+                <i class="ph-fill ph-cloud-sun text-3xl text-blue-400 mb-3"></i>
+                <div class="font-bold text-lg">ภาคบ่าย</div>
+                <div class="text-xs text-gray-400">13:00-16:00</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- CHECK-IN -->
+    <div v-else class="space-y-4">
+        <div class="flex items-center justify-between">
+            <button @click="step='session'" class="text-gray-400 text-sm flex items-center gap-1"><i class="ph ph-arrow-left"></i> กลับ</button>
+            <select v-model="selectedRoom" class="px-4 py-2 bg-white/5 border border-neon-border rounded-xl text-sm outline-none focus:border-neon-yellow">
+                <option value="" disabled>เลือกห้อง</option>
+                <option v-for="r in rooms" :value="r">{{r}}</option>
+            </select>
+        </div>
+        <h2 class="font-display font-bold flex items-center gap-2">
+            <i :class="session==='morning'?'ph-fill ph-sun text-orange-400':'ph-fill ph-cloud-sun text-blue-400'"></i>
+            {{session==='morning'?'เช้า':'บ่าย'}} • {{todayDisplay}}
+        </h2>
+
+        <!-- Search -->
+        <div v-if="selectedRoom" class="glass rounded-xl p-3 flex gap-2 items-center">
+            <i class="ph-fill ph-magnifying-glass text-neon-yellow"></i>
+            <input v-model="searchId" placeholder="เลขประจำตัว..." class="flex-1 bg-transparent outline-none text-sm" @keyup.enter="doSearch">
+        </div>
+
+        <!-- Stats -->
+        <div v-if="selectedRoom" class="grid grid-cols-3 gap-3">
+            <div class="glass rounded-xl p-3 text-center"><div class="text-xl font-bold">{{stats.total}}</div><div class="text-[10px] text-gray-400">ทั้งหมด</div></div>
+            <div class="glass rounded-xl p-3 text-center border-green-500/30"><div class="text-xl font-bold text-green-400">{{stats.present}}</div><div class="text-[10px] text-gray-400">มา</div></div>
+            <div class="glass rounded-xl p-3 text-center border-red-500/30"><div class="text-xl font-bold text-red-400">{{stats.absent}}</div><div class="text-[10px] text-gray-400">ขาด {{stats.pct}}%</div></div>
+        </div>
+
+        <!-- List -->
+        <div v-if="selectedRoom" class="glass rounded-2xl overflow-hidden">
+            <div v-if="filtered.length===0" class="p-10 text-center text-gray-500 text-sm">ไม่พบข้อมูล</div>
+            <div v-else class="max-h-[50vh] overflow-y-auto divide-y divide-white/5">
+                <div v-for="s in filtered" :key="s.id" class="flex items-center justify-between p-4">
+                    <div class="flex items-center gap-3 cursor-pointer" @click="openEdit(s)">
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold"
+                            :class="checked(s.id)?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-white/5 text-gray-500 border border-white/10'">
+                            <i :class="checked(s.id)?'ph-fill ph-check':'ph ph-minus'"></i>
+                        </div>
+                        <div><div class="text-sm font-medium">{{s.name}}</div><div class="text-[10px] text-gray-500">ID:{{s.id}}</div></div>
+                    </div>
+                    <button v-if="!checked(s.id)" @click="confirmCheck(s)" class="px-4 py-2 bg-neon-yellow text-neon-dark rounded-lg text-xs font-bold active:scale-95 transition">เช็คชื่อ</button>
+                    <button v-else @click="quickUndo(s)" class="px-4 py-2 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg text-xs font-bold active:scale-95 transition">✓ แล้ว</button>
+                </div>
+            </div>
+        </div>
+        <div v-else class="glass rounded-2xl p-12 text-center text-gray-500"><i class="ph ph-hand-pointing text-4xl mb-3"></i><br>เลือกห้องด้านบน</div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
+    <div v-if="confirmShow" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="confirmShow=false">
+        <div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-xs text-center space-y-4">
+            <div class="w-14 h-14 bg-neon-yellow/10 rounded-full flex items-center justify-center mx-auto"><i class="ph-fill ph-user-check text-2xl text-neon-yellow"></i></div>
+            <h3 class="font-bold text-lg">ยืนยันเช็คชื่อ</h3>
+            <div class="glass rounded-xl p-3"><div class="text-neon-yellow font-bold">{{confirmStu?.name}}</div><div class="text-xs text-gray-400">ID:{{confirmStu?.id}} • {{selectedRoom}}</div></div>
+            <div class="flex gap-3">
+                <button @click="confirmShow=false" class="flex-1 py-3 border border-white/10 rounded-xl text-sm">ยกเลิก</button>
+                <button @click="doCheckIn" class="flex-1 py-3 bg-neon-yellow text-neon-dark font-bold rounded-xl text-sm">ยืนยัน ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div v-if="editShow" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="editShow=false">
+        <div class="bg-[#1A1A1A] border border-neon-border rounded-2xl p-6 w-full max-w-xs space-y-4">
+            <div class="flex justify-between items-center"><h3 class="font-bold flex items-center gap-2"><i class="ph-fill ph-pencil-simple text-neon-yellow"></i> จัดการ</h3><button @click="editShow=false" class="text-gray-400"><i class="ph ph-x text-lg"></i></button></div>
+            <div class="glass rounded-xl p-3 space-y-1">
+                <div class="text-neon-yellow font-bold">{{editRec?.studentName}}</div>
+                <div class="text-xs text-gray-400">ID:{{editRec?.studentId}} • {{editRec?.date}}</div>
+                <div class="pt-2 border-t border-white/10 flex justify-between text-xs"><span class="text-gray-500">เวลา:</span>
+                    <input v-if="editing" v-model="editTime" type="time" class="bg-white/10 border border-neon-border rounded px-2 py-0.5 text-white outline-none text-xs">
+                    <span v-else>{{editRec?.time}}</span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button v-if="!editing" @click="editing=true" class="flex-1 py-3 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold">✏️ แก้เวลา</button>
+                <button v-else @click="saveTime" class="flex-1 py-3 bg-neon-yellow text-neon-dark rounded-xl text-xs font-bold">💾 บันทึก</button>
+                <button @click="deleteRec" class="flex-1 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold">🗑️ ลบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div v-if="toast.show" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-2xl font-bold text-sm whitespace-nowrap"
+        :class="toast.ok?'bg-green-500 text-white':'bg-red-500 text-white'">{{toast.msg}}</div>
+</div>
+
+<script>
+const{createApp,ref,computed,watch}=Vue;
+createApp({
+    setup(){
+        const step=ref('login'),staffId=ref(''),error=ref(''),currentStaff=ref(null);
+        const session=ref(''),selectedRoom=ref(''),searchId=ref('');
+        const confirmShow=ref(false),confirmStu=ref(null);
+        const editShow=ref(false),editRec=ref(null),editing=ref(false),editTime=ref('');
+        const toast=ref({show:false,msg:'',ok:true});
+
+        const todayKey=computed(()=>new Date().toISOString().split('T')[0]);
+        const todayDisplay=computed(()=>new Date().toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'}));
+
+        const staffList=[{id:'ST001',name:'อ.สมชาย'},{id:'ST002',name:'อ.วิชัย'},{id:'ST003',name:'พี่นภา'}];
+        const rooms=['ม.4/1','ม.4/2','ม.5/1','ม.5/2','ม.6/1','ม.6/2'];
+        const allStudents=[];let sid=10000;
+        rooms.forEach(r=>{for(let i=1;i<=10;i++){sid++;allStudents.push({id:String(sid),no:i,name:`นักเรียน ${sid}`,room:r})}});
+
+        const attendance=ref(JSON.parse(localStorage.getItem('abs_v4')||'[]'));
+        watch(attendance,v=>localStorage.setItem('abs_v4',JSON.stringify(v)),{deep:true});
+
+        function doLogin(){error.value='';const f=staffList.find(s=>s.id===staffId.value.trim());if(!f){error.value='รหัสไม่ถูกต้อง';return}currentStaff.value=f;step.value='session'}
+        function logout(){currentStaff.value=null;staffId.value='';step.value='login'}
+        function selectSession(s){session.value=s;selectedRoom.value='';searchId.value='';step.value='checkin'}
+
+        const filtered=computed(()=>{if(!selectedRoom.value)return[];let l=allStudents.filter(s=>s.room===selectedRoom.value);if(searchId.value.trim())l=l.filter(s=>s.id.includes(searchId.value.trim()));return l});
+        const stats=computed(()=>{if(!selectedRoom.value||!session.value)return{total:0,present:0,absent:0,pct:0};const t=allStudents.filter(s=>s.room===selectedRoom.value).length;const p=attendance.value.filter(a=>a.room===selectedRoom.value&&a.session===session.value&&a.date===todayKey.value).length;return{total:t,present:p,absent:t-p,pct:t?Math.round(p/t*100):0}});
+
+        function checked(id){return attendance.value.some(a=>a.studentId===id&&a.session===session.value&&a.date===todayKey.value)}
+        function getRec(id){return attendance.value.find(a=>a.studentId===id&&a.session===session.value&&a.date===todayKey.value)}
+
+        function confirmCheck(s){if(checked(s.id))return;confirmStu.value=s;confirmShow.value=true}
+        function doCheckIn(){const s=confirmStu.value;attendance.value.push({id:Date.now(),studentId:s.id,studentName:s.name,room:selectedRoom.value,session:session.value,staffId:currentStaff.value.id,date:todayKey.value,time:new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})});confirmShow.value=false;showToast(`✓ ${s.name}`,true)}
+
+        function quickUndo(s){const r=getRec(s.id);if(!r)return;if(confirm(`ยกเลิก "${s.name}"?`)){attendance.value=attendance.value.filter(a=>a.id!==r.id);showToast(`↩️ ยกเลิกแล้ว`,false)}}
+
+        function openEdit(s){const r=getRec(s.id);if(!r)return;editRec.value={...r};editing.value=false;editTime.value=r.time;editShow.value=true}
+        function saveTime(){const i=attendance.value.findIndex(a=>a.id===editRec.value.id);if(i!==-1){attendance.value[i].time=editTime.value;editRec.value.time=editTime.value;editing.value=false;showToast('✏️ แก้เวลาสำเร็จ',true)}}
+        function deleteRec(){if(confirm(`ลบ "${editRec.value.studentName}" ถาวร?`)){attendance.value=attendance.value.filter(a=>a.id!==editRec.value.id);editShow.value=false;showToast('🗑️ ลบแล้ว',false)}}
+
+        function doSearch(){const f=filtered.value[0];if(f&&!checked(f.id))confirmCheck(f);else if(f&&checked(f.id))openEdit(f);else showToast('ไม่พบ',false)}
+        function showToast(m,o){toast.value={show:true,msg:m,ok:o};setTimeout(()=>toast.value.show=false,2000)}
+
+        return{step,staffId,error,currentStaff,session,selectedRoom,searchId,rooms,filtered,stats,todayDisplay,staffList,confirmShow,confirmStu,editShow,editRec,editing,editTime,toast,doLogin,logout,selectSession,checked,confirmCheck,doCheckIn,quickUndo,openEdit,saveTime,deleteRec,doSearch}
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
+
